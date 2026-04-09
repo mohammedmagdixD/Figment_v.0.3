@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Loader2, Sparkles, Music, Headphones, Book, Film, Tv, Trash2 } from 'lucide-react';
 import { getRecommendations, deleteRecommendation } from '../services/supabaseData';
 import { useAuth } from '../contexts/AuthContext';
@@ -38,26 +38,47 @@ const getLabelForType = (type: string) => {
 
 const ExpandableMessage = ({ text }: { text: string }) => {
   const [isExpanded, setIsExpanded] = useState(false);
-  const maxLength = 140;
+  const [isTruncatable, setIsTruncatable] = useState(false);
+  const textRef = useRef<HTMLParagraphElement>(null);
 
-  if (text.length <= maxLength) {
-    return <span>"{text}"</span>;
-  }
+  useEffect(() => {
+    const checkTruncation = () => {
+      if (textRef.current && !isExpanded) {
+        setIsTruncatable(textRef.current.scrollHeight > textRef.current.clientHeight + 2);
+      }
+    };
+    
+    checkTruncation();
+    const timeoutId = setTimeout(checkTruncation, 50);
+    window.addEventListener('resize', checkTruncation);
+    
+    return () => {
+      clearTimeout(timeoutId);
+      window.removeEventListener('resize', checkTruncation);
+    };
+  }, [text, isExpanded]);
 
   return (
-    <span>
-      "{isExpanded ? text : `${text.slice(0, maxLength).trim()}...`}
-      <button 
-        onClick={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          setIsExpanded(!isExpanded);
-        }}
-        className="text-[var(--secondary-label)] font-medium ml-1 hover:text-[var(--label)] transition-colors"
+    <div className="flex flex-col items-start w-full">
+      <p 
+        ref={textRef}
+        className={`text-[var(--label)] leading-relaxed ${!isExpanded ? 'line-clamp-3' : ''}`}
       >
-        {isExpanded ? 'less' : 'more'}
-      </button>"
-    </span>
+        "{text}{!isExpanded && isTruncatable ? '' : '"'}
+      </p>
+      {isTruncatable && (
+        <button 
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            setIsExpanded(!isExpanded);
+          }}
+          className="text-[var(--label)] mt-0.5 hover:opacity-80 transition-opacity"
+        >
+          {isExpanded ? 'less' : 'more'}
+        </button>
+      )}
+    </div>
   );
 };
 
@@ -124,7 +145,7 @@ export function RecommendationsView({ viewingUserId }: { viewingUserId?: string 
   }
 
   return (
-    <div className="pb-12 px-4 pt-4">
+    <div className="pb-4 px-4 pt-4">
       <h2 className="font-serif text-2xl font-semibold text-[var(--label)] mb-4">
         For You
       </h2>
@@ -172,14 +193,14 @@ export function RecommendationsView({ viewingUserId }: { viewingUserId?: string 
                 </button>
 
                 <div className="flex items-center gap-2">
-                  <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-[var(--separator)] bg-transparent text-[var(--secondary-label)]">
+                  <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-[var(--separator)] !bg-transparent text-[var(--secondary-label)]">
                     {getIconForType(media?.media_type)}
                     <span className="text-xs font-medium">{getLabelForType(media?.media_type)}</span>
                   </div>
                   {isOwnProfile && (
                     <button
                       onClick={() => setDeleteConfirmId(rec.id)}
-                      className="p-1.5 rounded-full border border-[var(--separator)] bg-transparent text-[var(--secondary-label)] hover:text-red-500 hover:border-red-500/30 hover:bg-red-500/10 transition-colors"
+                      className="p-1.5 rounded-full border border-[var(--separator)] !bg-transparent text-[var(--secondary-label)] hover:text-red-500 hover:border-red-500/30 hover:!bg-red-500/10 transition-colors"
                       aria-label="Delete recommendation"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -223,9 +244,7 @@ export function RecommendationsView({ viewingUserId }: { viewingUserId?: string 
 
               {rec.message && (
                 <div className="mt-2">
-                  <p className="font-sans text-sm text-[var(--label)] leading-relaxed">
-                    <ExpandableMessage text={rec.message} />
-                  </p>
+                  <ExpandableMessage text={rec.message} />
                 </div>
               )}
             </motion.div>

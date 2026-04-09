@@ -4,14 +4,14 @@ import { Play, Pause, ListPlus } from 'lucide-react';
 import { UniversalMediaData } from '../types/universal';
 
 interface MediaCardProps {
-  item: any;
+  item: UniversalMediaData;
   sectionType: string;
   index: number;
   playingId: string | null;
   isPriority?: boolean;
-  onItemClick: (item: any) => void;
+  onItemClick: (item: UniversalMediaData) => void;
   onPlayToggle: (url: string, id: string) => void;
-  onAddToAlbum?: (item: any) => void;
+  onAddToAlbum?: (item: UniversalMediaData) => void;
 }
 
 const MediaCardComponent = ({
@@ -45,20 +45,10 @@ const MediaCardComponent = ({
     }
   };
 
-  const getImageUrl = (item: any) => {
-    if (!item) return undefined;
-    if (item.image) return item.image;
-    if (item.images?.posterUrl) return item.images.posterUrl;
-    if (item.images?.[0]?.url) return item.images[0].url;
-    if (item.poster_url) return item.poster_url;
-    if (item.poster_path) return `https://image.tmdb.org/t/p/w500${item.poster_path}`;
-    if (item.main_picture?.large) return item.main_picture.large;
-    if (item.main_picture?.medium) return item.main_picture.medium;
-    if (item.volumeInfo?.imageLinks?.thumbnail) return item.volumeInfo.imageLinks.thumbnail;
-    return undefined;
-  };
-
-  const imageUrl = getImageUrl(item);
+  const imageUrl = item.images?.posterUrl;
+  const playUrl = item.actionButton?.payload || item.secondaryActionButton?.payload;
+  const title = item.header?.title;
+  const subtitle = item.header?.subtitle;
 
   return (
     <motion.div 
@@ -81,7 +71,7 @@ const MediaCardComponent = ({
             initial={{ opacity: 0 }}
             animate={{ opacity: isLoaded ? 1 : 0 }}
             src={imageUrl} 
-            alt={item.title || item.header?.title}
+            alt={title}
             loading={isPriority ? "eager" : "lazy"}
             onLoad={() => setIsLoaded(true)}
             onError={() => setIsLoaded(true)}
@@ -91,7 +81,7 @@ const MediaCardComponent = ({
         ) : (
           <div className="absolute inset-0 flex items-center justify-center bg-[var(--secondary-system-background)] p-4 text-center">
             <span className="text-xs font-medium text-[var(--secondary-label)] line-clamp-3">
-              {item.title || item.header?.title || 'No Image'}
+              {title || 'No Image'}
             </span>
           </div>
         )}
@@ -100,16 +90,16 @@ const MediaCardComponent = ({
         <div className="absolute inset-0 shadow-[inset_0_0_0_1px_rgba(0,0,0,0.05)] dark:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.05)] pointer-events-none rounded-xl" />
         {/* Hover overlay */}
         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 dark:group-hover:bg-white/10 transition-colors duration-300" />
-        {(item.previewUrl || (item.secondaryActionButton?.type === 'audio' && item.secondaryActionButton?.payload)) && (
+        
+        {playUrl && (
           <button
             onClick={(e) => {
               e.stopPropagation();
-              const url = item.previewUrl || item.secondaryActionButton?.payload;
-              if (url) onPlayToggle(url, item.id?.toString());
+              onPlayToggle(playUrl, item.id);
             }}
             className="absolute bottom-2 right-2 w-8 h-8 rounded-full bg-black/50 backdrop-blur-md flex items-center justify-center text-white hover:bg-black/70 transition-colors z-20"
           >
-            {playingId === item.id?.toString() ? (
+            {playingId === item.id ? (
               <Pause className="w-4 h-4" />
             ) : (
               <Play className="w-4 h-4 ml-0.5" />
@@ -130,14 +120,18 @@ const MediaCardComponent = ({
       </div>
       <div className="w-full">
         <h3 className="font-sans text-base font-semibold leading-tight text-[var(--label)] card-text-truncate">
-          {item.title || item.header?.title}
+          {title}
         </h3>
-        <p className="font-sans text-sm font-medium leading-relaxed text-[var(--secondary-label)] card-text-truncate mt-0.5">
-          {item.subtitle || item.header?.subtitle}
-        </p>
+        {subtitle && (
+          <p className="font-sans text-sm font-medium leading-relaxed text-[var(--secondary-label)] card-text-truncate mt-0.5">
+            {subtitle}
+          </p>
+        )}
       </div>
     </motion.div>
   );
 };
 
-export const MediaCard = memo(MediaCardComponent, (prevProps, nextProps) => prevProps.item.id === nextProps.item.id && prevProps.playingId === nextProps.playingId);
+export const MediaCard = memo(MediaCardComponent, (prevProps, nextProps) => 
+  prevProps.item.id === nextProps.item.id && prevProps.playingId === nextProps.playingId
+);
