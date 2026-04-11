@@ -1,6 +1,7 @@
 import React, { useState, memo } from 'react';
 import { motion } from 'motion/react';
-import { Play, Pause, ListPlus } from 'lucide-react';
+import { Play, Pause, ListPlus, Loader2 } from 'lucide-react';
+import { fetchWithBackoff } from '../services/api';
 import { UniversalMediaData } from '../types/universal';
 
 interface MediaCardProps {
@@ -24,31 +25,59 @@ const MediaCardComponent = ({
   onPlayToggle,
   onAddToAlbum
 }: MediaCardProps) => {
-  const [isLoaded, setIsLoaded] = useState(false);
+  const [isFetchingAudio, setIsFetchingAudio] = useState(false);
 
   const getAspectRatioClass = (type: string) => {
     switch (type) {
-      case 'movies':
-      case 'tv':
-        return 'aspect-[2/3] w-[140px]';
-      case 'books':
-        return 'aspect-[2/3] w-[140px]';
       case 'music':
       case 'song':
-        return 'aspect-square w-[140px]';
       case 'podcasts':
-        return 'aspect-square w-[140px]';
-      case 'games':
-        return 'aspect-[3/4] w-[140px]';
+      case 'podcast':
+        return 'card-square';
       default:
-        return 'aspect-[2/3] w-[140px]';
+        return 'card-vertical';
     }
   };
 
-  const imageUrl = item.images?.posterUrl;
-  const playUrl = item.actionButton?.payload || item.secondaryActionButton?.payload;
-  const title = item.header?.title;
-  const subtitle = item.header?.subtitle;
+  // Safely grab the image whether it's wrapped in the normalized 'images' object 
+  // OR if it's arriving as a raw database row.
+  const mediaItem = (item as any).media_items || item;
+  const imageUrl = item.images?.posterUrl || mediaItem.image_url || mediaItem.image;
+  const playUrl = item.actionButton?.payload || item.secondaryActionButton?.payload || mediaItem.previewUrl || mediaItem.preview_url;
+  const title = item.header?.title || mediaItem.title;
+  const subtitle = item.header?.subtitle || mediaItem.subtitle;
+
+  const isMusic = sectionType === 'music' || sectionType === 'song' || mediaItem.media_type === 'music' || mediaItem.media_type === 'song';
+  const showPlayButton = playUrl || isMusic;
+
+  const handlePlayClick = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    
+    if (playingId === item.id) {
+      onPlayToggle('', item.id); // This will pause it in MediaScroller
+      return;
+    }
+
+    if (playUrl) {
+      onPlayToggle(playUrl, item.id);
+    } else if (isMusic) {
+      setIsFetchingAudio(true);
+      try {
+        const query = `${title} ${subtitle || ''}`.trim();
+        const res = await fetchWithBackoff(`https://itunes.apple.com/search?term=${encodeURIComponent(query)}&entity=song&limit=1`);
+        const data = await res.json();
+        if (data.results && data.results.length > 0 && data.results[0].previewUrl) {
+          onPlayToggle(data.results[0].previewUrl, item.id);
+        } else {
+          console.warn('No preview URL found on iTunes');
+        }
+      } catch (error) {
+        console.error('Error fetching from iTunes:', error);
+      } finally {
+        setIsFetchingAudio(false);
+      }
+    }
+  };
 
   return (
     <motion.div 
@@ -61,27 +90,23 @@ const MediaCardComponent = ({
       <div className="relative overflow-hidden rounded-xl bg-[var(--secondary-system-background)] shadow-sm border border-[var(--separator)] card-image">
         
         {/* Skeleton Placeholder */}
-        {(!isLoaded && imageUrl) && (
+        {!imageUrl && (
           <div className="absolute inset-0 bg-[var(--secondary-system-background)] animate-pulse" />
         )}
 
         {/* Image */}
         {imageUrl ? (
           <motion.img 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: isLoaded ? 1 : 0 }}
             src={imageUrl} 
             alt={title}
             loading={isPriority ? "eager" : "lazy"}
-            onLoad={() => setIsLoaded(true)}
-            onError={() => setIsLoaded(true)}
             className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
             referrerPolicy="no-referrer"
           />
         ) : (
-          <div className="absolute inset-0 flex items-center justify-center bg-[var(--secondary-system-background)] p-4 text-center">
-            <span className="text-xs font-medium text-[var(--secondary-label)] line-clamp-3">
-              {title || 'No Image'}
+          <div className="absolute inset-0 flex items-center justify-center bg-[var(--secondary-system-background)] p-4 text-center overflow-auto">
+            <span className="text-[8px] font-mono text-[var(--secondary-label)] break-all">
+              {JSON.stringify(item).substring(0, 200)}
             </span>
           </div>
         )}
@@ -91,15 +116,15 @@ const MediaCardComponent = ({
         {/* Hover overlay */}
         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 dark:group-hover:bg-white/10 transition-colors duration-300" />
         
-        {playUrl && (
+        {showPlayButton && (
           <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onPlayToggle(playUrl, item.id);
-            }}
-            className="absolute bottom-2 right-2 w-8 h-8 rounded-full bg-black/50 backdrop-blur-md flex items-center justify-center text-white hover:bg-black/70 transition-colors z-20"
+            onClick={handlePlayClick}
+            disabled={isFetchingAudio}
+            className="absolute bottom-2 right-2 w-8 h-8 rounded-full bg-black/50 backdrop-blur-md flex items-center justify-center text-white hover:bg-black/70 transition-colors z-20 disabled:opacity-50"
           >
-            {playingId === item.id ? (
+            {isFetchingAudio ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : playingId === item.id ? (
               <Pause className="w-4 h-4" />
             ) : (
               <Play className="w-4 h-4 ml-0.5" />

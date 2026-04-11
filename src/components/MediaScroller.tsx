@@ -38,20 +38,6 @@ export function MediaScroller({ section, dragControls, isFirstSection = false, o
       audio.onended = () => setPlayingId(null);
     }
   };
-  const getAspectRatioClass = (type: string) => {
-    switch (type) {
-      case 'podcast':
-      case 'music':
-        return 'card-square';
-      case 'movie':
-      case 'book':
-      case 'anime':
-      case 'manga':
-      case 'webnovel':
-      default:
-        return 'card-vertical';
-    }
-  };
 
   return (
     <section className="py-2 bg-transparent">

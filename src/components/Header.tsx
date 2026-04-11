@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { haptics } from '../utils/haptics';
 import { useAuth } from '../contexts/AuthContext';
 import { useState } from 'react';
+import { ShareSheet } from './ShareSheet';
 
 interface HeaderProps {
   profile: any;
@@ -14,6 +15,7 @@ interface HeaderProps {
 export function Header({ profile, isOwnProfile = true, onRecommendClick, onAuthClick }: HeaderProps) {
   const { user, signOut } = useAuth();
   const [isActionSheetOpen, setIsActionSheetOpen] = useState(false);
+  const [isShareSheetOpen, setIsShareSheetOpen] = useState(false);
 
   const getIcon = (iconName: string) => {
     switch (iconName) {
@@ -33,31 +35,9 @@ export function Header({ profile, isOwnProfile = true, onRecommendClick, onAuthC
     }
   };
 
-  const handleShare = async () => {
+  const handleShare = () => {
     haptics.light();
-    const shareUrl = `${window.location.origin}/@${profile.handle.replace('@', '')}`;
-    const shareData = {
-      title: `${profile.name}'s Profile`,
-      text: `Check out ${profile.name}'s recommendations!`,
-      url: shareUrl,
-    };
-
-    if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
-      try {
-        await navigator.share(shareData);
-      } catch (err: any) {
-        if (err.name !== 'AbortError') {
-          console.error('Error sharing:', err);
-        }
-      }
-    } else {
-      try {
-        await navigator.clipboard.writeText(shareUrl);
-        alert('Profile link copied to clipboard!');
-      } catch (err) {
-        console.error('Failed to copy link:', err);
-      }
-    }
+    setIsShareSheetOpen(true);
   };
 
   return (
@@ -66,18 +46,29 @@ export function Header({ profile, isOwnProfile = true, onRecommendClick, onAuthC
         {/* Top Actions - Glassmorphic */}
         <div className="absolute top-4 right-4 flex gap-3 z-10">
           {!isOwnProfile ? (
-            <motion.button 
-              whileHover={{ scale: window.matchMedia('(hover: hover)').matches ? 1.05 : 1 }}
-              whileTap={{ scale: 0.95 }}
-              transition={{ type: "spring", stiffness: 600, damping: 35 }}
-              onClick={() => {
-                haptics.light();
-                onAuthClick?.();
-              }}
-              className="p-2.5 bg-[var(--secondary-system-background)]/70 backdrop-blur-md border border-[var(--separator)] shadow-sm rounded-full text-[var(--label)] hover:bg-[var(--secondary-system-background)]/90 transition-colors"
-            >
-              <LogIn className="w-4 h-4" />
-            </motion.button>
+            <>
+              <motion.button 
+                whileHover={{ scale: window.matchMedia('(hover: hover)').matches ? 1.05 : 1 }}
+                whileTap={{ scale: 0.95 }}
+                transition={{ type: "spring", stiffness: 600, damping: 35 }}
+                onClick={handleShare}
+                className="p-2.5 bg-[var(--secondary-system-background)]/70 backdrop-blur-md border border-[var(--separator)] shadow-sm rounded-full text-[var(--label)] hover:bg-[var(--secondary-system-background)]/90 transition-colors"
+              >
+                <Share className="w-4 h-4" />
+              </motion.button>
+              <motion.button 
+                whileHover={{ scale: window.matchMedia('(hover: hover)').matches ? 1.05 : 1 }}
+                whileTap={{ scale: 0.95 }}
+                transition={{ type: "spring", stiffness: 600, damping: 35 }}
+                onClick={() => {
+                  haptics.light();
+                  onAuthClick?.();
+                }}
+                className="p-2.5 bg-[var(--secondary-system-background)]/70 backdrop-blur-md border border-[var(--separator)] shadow-sm rounded-full text-[var(--label)] hover:bg-[var(--secondary-system-background)]/90 transition-colors"
+              >
+                <LogIn className="w-4 h-4" />
+              </motion.button>
+            </>
           ) : (
             <>
               <motion.button 
@@ -189,7 +180,6 @@ export function Header({ profile, isOwnProfile = true, onRecommendClick, onAuthC
         </div>
       </header>
 
-      {/* iOS Action Sheet */}
       <AnimatePresence>
         {isActionSheetOpen && (
           <>
@@ -241,6 +231,16 @@ export function Header({ profile, isOwnProfile = true, onRecommendClick, onAuthC
           </>
         )}
       </AnimatePresence>
+
+      <ShareSheet 
+        isOpen={isShareSheetOpen}
+        onClose={() => setIsShareSheetOpen(false)}
+        profile={{
+          name: profile.name,
+          handle: profile.handle,
+          avatar: profile.avatar
+        }}
+      />
     </>
   );
 }

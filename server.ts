@@ -1,15 +1,39 @@
 import express from 'express';
 import cors from 'cors';
-import { FetchError, isFetchError } from './src/types/api';
+import { FetchError, isFetchError } from './src/types/api.ts';
 import { createServer as createViteServer } from 'vite';
 import path from 'path';
-import { fetchWithCache } from './src/utils/cache';
+import fs from 'fs';
+import { fetchWithCache } from './src/utils/cache.ts';
+import { createClient } from '@supabase/supabase-js';
+import satori from 'satori';
+import { html } from 'satori-html';
+import { Resvg } from '@resvg/resvg-js';
+
+let interRegular: ArrayBuffer | null = null;
+let interBold: ArrayBuffer | null = null;
+
+async function loadFonts() {
+  if (!interRegular) {
+    const res = await fetch('https://raw.githubusercontent.com/rsms/inter/master/docs/font-files/Inter-Regular.ttf');
+    interRegular = await res.arrayBuffer();
+  }
+  if (!interBold) {
+    const res = await fetch('https://raw.githubusercontent.com/rsms/inter/master/docs/font-files/Inter-Bold.ttf');
+    interBold = await res.arrayBuffer();
+  }
+}
 
 async function startServer() {
   const app = express();
   const PORT = 3000;
 
   app.use(cors());
+
+  // Initialize Supabase client for OG tag injection
+  const supabaseUrl = process.env.VITE_SUPABASE_URL;
+  const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY;
+  const supabase = createClient(supabaseUrl || '', supabaseAnonKey || '');
 
   // Spotify Auth Token Cache
   let spotifyToken: string | null = null;
@@ -318,19 +342,187 @@ async function startServer() {
   });
 
   // Vite middleware for development
+  let vite: any;
   if (process.env.NODE_ENV !== 'production') {
-    const vite = await createViteServer({
+    vite = await createViteServer({
       server: { middlewareMode: true },
       appType: 'spa',
     });
+  }
+
+  // OG Image Route
+  app.get('/api/og/@:handle', async (req, res) => {
+    let handle = req.params.handle;
+    handle = handle.replace(/[:/]+$/, '');
+
+    try {
+      const { data: userProfile, error } = await supabase
+        .from('users')
+        .select('name, bio, avatar_url')
+        .or(`handle.eq.${handle},username.eq.${handle}`)
+        .single();
+
+      if (error || !userProfile) {
+        return res.status(404).send('Not found');
+      }
+
+      const name = userProfile.name || 'Anonymous';
+      const bio = (userProfile.bio || '').substring(0, 100) + (userProfile.bio?.length > 100 ? '...' : '');
+      const avatarUrl = userProfile.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${handle}`;
+
+      let avatarBase64 = '';
+      try {
+        const avatarRes = await fetch(avatarUrl);
+        const buffer = await avatarRes.arrayBuffer();
+        const contentType = avatarRes.headers.get('content-type') || 'image/png';
+        avatarBase64 = `data:${contentType};base64,${Buffer.from(buffer).toString('base64')}`;
+      } catch (e) {
+        console.error('Error fetching avatar for OG:', e);
+      }
+
+      await loadFonts();
+
+      const markup = html`
+        <div style="display: flex; flex-direction: column; width: 1200px; height: 630px; background-color: #050505; background-image: linear-gradient(135deg, #0f172a 0%, #000000 100%); position: relative; overflow: hidden; align-items: center; justify-content: center; font-family: 'Inter', sans-serif;">
+          
+          <!-- Decorative elements -->
+          <div style="position: absolute; top: -200px; right: -100px; width: 800px; height: 800px; background-image: radial-gradient(circle, rgba(196, 227, 243, 0.15) 0%, rgba(0,0,0,0) 70%); border-radius: 50%;"></div>
+          <div style="position: absolute; bottom: -200px; left: -100px; width: 800px; height: 800px; background-image: radial-gradient(circle, rgba(244, 200, 221, 0.1) 0%, rgba(0,0,0,0) 70%); border-radius: 50%;"></div>
+          
+          <!-- Glass Card -->
+          <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; width: 1080px; height: 510px; background-color: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 48px; box-shadow: 0 30px 60px rgba(0,0,0,0.5);">
+            
+            <!-- Avatar -->
+            <div style="display: flex; width: 220px; height: 220px; border-radius: 110px; overflow: hidden; border: 2px solid rgba(255,255,255,0.15); margin-bottom: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+              ${avatarBase64 ? `<img src="${avatarBase64}" width="220" height="220" style="object-fit: cover;" />` : `<div style="width: 220px; height: 220px; background-color: rgba(255,255,255,0.05);"></div>`}
+            </div>
+
+            <!-- Text Content -->
+            <div style="display: flex; flex-direction: column; align-items: center;">
+              <div style="font-size: 84px; font-weight: 700; color: #ffffff; letter-spacing: -0.02em; margin-bottom: 10px; text-align: center;">${name}</div>
+              <div style="font-size: 36px; font-weight: 400; color: rgba(255,255,255,0.5); margin-bottom: 30px;">@${handle}</div>
+              <div style="font-size: 28px; font-weight: 400; color: rgba(255,255,255,0.6); text-align: center; max-width: 800px; line-height: 1.5;">${bio}</div>
+            </div>
+            
+            <!-- Bottom Branding -->
+            <div style="position: absolute; bottom: 80px; display: flex; width: 960px; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 30px;">
+              <div style="font-size: 16px; color: rgba(255,255,255,0.4); letter-spacing: 2px;">DIGITAL IDENTITY PWA</div>
+              <div style="font-size: 24px; font-weight: 700; color: #ffffff; letter-spacing: 6px; opacity: 0.8;">FIGMENT</div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      const svg = await satori(markup as any, {
+        width: 1200,
+        height: 630,
+        fonts: [
+          {
+            name: 'Inter',
+            data: interRegular!,
+            weight: 400,
+            style: 'normal',
+          },
+          {
+            name: 'Inter',
+            data: interBold!,
+            weight: 700,
+            style: 'normal',
+          },
+        ],
+      });
+
+      const resvg = new Resvg(svg, {
+        fitTo: {
+          mode: 'width',
+          value: 1200,
+        },
+      });
+      const pngData = resvg.render();
+      const pngBuffer = pngData.asPng();
+
+      res.setHeader('Content-Type', 'image/png');
+      res.setHeader('Cache-Control', 'public, max-age=3600');
+      res.send(pngBuffer);
+    } catch (e) {
+      console.error('Error generating OG image:', e);
+      res.status(500).send('Error');
+    }
+  });
+
+  // Handle dynamic OG tags for profile routes
+  app.get('/@:handle', async (req, res, next) => {
+    let handle = req.params.handle;
+    handle = handle.replace(/[:/]+$/, '');
+    
+    try {
+      // Fetch user profile from Supabase
+      const { data: userProfile, error } = await supabase
+        .from('users')
+        .select('name, bio, avatar_url')
+        .or(`handle.eq.${handle},username.eq.${handle}`)
+        .single();
+
+      if (error || !userProfile) {
+        return next(); // Fallback to default index.html
+      }
+
+      let template: string;
+      if (process.env.NODE_ENV !== 'production') {
+        template = fs.readFileSync(path.resolve(process.cwd(), 'index.html'), 'utf-8');
+        template = await vite.transformIndexHtml(req.originalUrl, template);
+      } else {
+        template = fs.readFileSync(path.resolve(process.cwd(), 'dist/index.html'), 'utf-8');
+      }
+
+      const name = userProfile.name || 'Anonymous';
+      const bio = userProfile.bio || `Check out ${name}'s profile on Figment.`;
+      const ogImageUrl = `https://${req.get('host')}/api/og/@${handle}`;
+
+      const ogTags = `
+        <title>${name} (@${handle}) | Figment</title>
+        <meta name="description" content="${bio}" />
+        <meta property="og:title" content="${name} (@${handle}) | Figment" />
+        <meta property="og:description" content="${bio}" />
+        <meta property="og:image" content="${ogImageUrl}" />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:image:type" content="image/png" />
+        <meta property="og:url" content="https://${req.get('host')}/@${handle}" />
+        <meta property="og:type" content="profile" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="${name} (@${handle}) | Figment" />
+        <meta name="twitter:description" content="${bio}" />
+        <meta name="twitter:image" content="${ogImageUrl}" />
+      `;
+
+      const html = template.replace(
+        '</head>',
+        `${ogTags}</head>`
+      );
+
+      res.status(200).set({ 'Content-Type': 'text/html' }).end(html);
+    } catch (e) {
+      console.error('Error injecting OG tags:', e);
+      next();
+    }
+  });
+
+  if (process.env.NODE_ENV !== 'production') {
     app.use(vite.middlewares);
   } else {
     const distPath = path.join(process.cwd(), 'dist');
     app.use(express.static(distPath));
-    app.get('*', (req, res) => {
-      res.sendFile(path.join(distPath, 'index.html'));
-    });
   }
+
+  // SPA fallback
+  app.get('*', (req, res) => {
+    if (process.env.NODE_ENV !== 'production') {
+      // Vite handles this in dev mode via middleware
+    } else {
+      res.sendFile(path.join(process.cwd(), 'dist/index.html'));
+    }
+  });
 
   app.listen(PORT, '0.0.0.0', () => {
     console.log(`Server running on http://localhost:${PORT}`);
