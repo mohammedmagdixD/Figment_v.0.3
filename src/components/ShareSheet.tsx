@@ -77,7 +77,7 @@ export function ShareSheet({ isOpen, onClose, profile }: ShareSheetProps) {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={onClose}
-              className="fixed inset-0 z-[60] bg-black/40 backdrop-blur-sm"
+              className="fixed inset-0 z-[60] bg-black/60 backdrop-blur-md"
             />
             
             {/* Sheet */}
@@ -88,36 +88,45 @@ export function ShareSheet({ isOpen, onClose, profile }: ShareSheetProps) {
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
               className="fixed bottom-0 left-0 right-0 z-[70] px-4 pb-safe-bottom"
             >
-              <div className="bg-[var(--secondary-system-background)]/95 backdrop-blur-2xl rounded-t-[32px] overflow-hidden shadow-2xl border-t border-[var(--separator)]">
+              <div className="bg-[var(--secondary-system-background)]/80 backdrop-blur-3xl rounded-[32px] overflow-hidden shadow-2xl border border-white/10 mb-4">
                 {/* Handle */}
-                <div className="flex justify-center pt-3 pb-1">
-                  <div className="w-10 h-1 bg-[var(--separator)] rounded-full" />
+                <div className="flex justify-center pt-4 pb-2">
+                  <div className="w-12 h-1.5 bg-white/20 rounded-full" />
                 </div>
 
-                <div className="px-6 pt-4 pb-8">
-                  <h2 className="text-xl font-bold text-[var(--label)] text-center mb-8">Share Profile</h2>
+                <div className="px-6 pt-2 pb-6">
+                  {/* Header */}
+                  <div className="flex items-center gap-4 mb-6">
+                    <div className="relative w-12 h-12 rounded-full overflow-hidden border border-white/10 shadow-sm">
+                      <img src={profile.avatar} alt={profile.name} className="w-full h-full object-cover" />
+                    </div>
+                    <div>
+                      <h2 className="text-lg font-bold text-[var(--label)]">{profile.name}</h2>
+                      <p className="text-sm text-[var(--secondary-label)]">Share Profile</p>
+                    </div>
+                  </div>
                   
                   {/* Main Actions */}
-                  <div className="grid grid-cols-2 gap-4 mb-8">
+                  <div className="grid grid-cols-2 gap-3 mb-8">
                     <button
                       onClick={() => {
                         haptics.medium();
                         setShowQRCode(true);
                       }}
-                      className="flex flex-col items-center justify-center gap-3 p-6 bg-[var(--tertiary-system-background)] rounded-2xl hover:bg-[var(--quaternary-system-background)] transition-colors group"
+                      className="flex flex-col items-start justify-between p-4 h-28 bg-white/5 border border-white/5 rounded-[24px] hover:bg-white/10 transition-colors group"
                     >
-                      <div className="w-12 h-12 flex items-center justify-center rounded-full bg-[var(--label)] text-[var(--system-background)] group-hover:scale-110 transition-transform">
-                        <QrCode className="w-6 h-6" />
+                      <div className="w-10 h-10 flex items-center justify-center rounded-full bg-white/10 text-[var(--label)] group-hover:scale-110 transition-transform shadow-sm">
+                        <QrCode className="w-5 h-5" />
                       </div>
                       <span className="text-sm font-semibold text-[var(--label)]">QR Code</span>
                     </button>
 
                     <button
                       onClick={handleCopy}
-                      className="flex flex-col items-center justify-center gap-3 p-6 bg-[var(--tertiary-system-background)] rounded-2xl hover:bg-[var(--quaternary-system-background)] transition-colors group"
+                      className="flex flex-col items-start justify-between p-4 h-28 bg-white/5 border border-white/5 rounded-[24px] hover:bg-white/10 transition-colors group"
                     >
-                      <div className="w-12 h-12 flex items-center justify-center rounded-full bg-[var(--label)] text-[var(--system-background)] group-hover:scale-110 transition-transform">
-                        {isCopied ? <Check className="w-6 h-6" /> : <Copy className="w-6 h-6" />}
+                      <div className="w-10 h-10 flex items-center justify-center rounded-full bg-white/10 text-[var(--label)] group-hover:scale-110 transition-transform shadow-sm">
+                        {isCopied ? <Check className="w-5 h-5" /> : <Copy className="w-5 h-5" />}
                       </div>
                       <span className="text-sm font-semibold text-[var(--label)]">
                         {isCopied ? 'Copied!' : 'Copy Link'}
@@ -126,9 +135,9 @@ export function ShareSheet({ isOpen, onClose, profile }: ShareSheetProps) {
                   </div>
 
                   {/* Socials */}
-                  <div className="space-y-4">
-                    <p className="text-xs font-bold text-[var(--secondary-label)] uppercase tracking-wider px-1">Send to</p>
-                    <div className="flex gap-4 overflow-x-auto hide-scrollbar py-2">
+                  <div className="space-y-3">
+                    <p className="text-xs font-semibold text-[var(--secondary-label)] uppercase tracking-wider px-1">Share via</p>
+                    <div className="flex gap-3 overflow-x-auto hide-scrollbar py-1 -mx-2 px-2">
                       {socialOptions.map((option) => (
                         <a
                           key={option.name}
@@ -136,12 +145,12 @@ export function ShareSheet({ isOpen, onClose, profile }: ShareSheetProps) {
                           target="_blank"
                           rel="noopener noreferrer"
                           onClick={() => haptics.light()}
-                          className="flex flex-col items-center gap-2 shrink-0"
+                          className="flex flex-col items-center gap-2 shrink-0 group"
                         >
-                          <div className={`w-14 h-14 flex items-center justify-center rounded-full ${option.color} text-white shadow-lg active:scale-90 transition-transform`}>
+                          <div className={`w-14 h-14 flex items-center justify-center rounded-[20px] ${option.color} text-white shadow-lg group-active:scale-90 transition-all duration-300 group-hover:rounded-[16px]`}>
                             {option.icon}
                           </div>
-                          <span className="text-xs font-medium text-[var(--secondary-label)]">{option.name}</span>
+                          <span className="text-[11px] font-medium text-[var(--secondary-label)]">{option.name}</span>
                         </a>
                       ))}
                     </div>
@@ -152,7 +161,7 @@ export function ShareSheet({ isOpen, onClose, profile }: ShareSheetProps) {
               {/* Cancel Button */}
               <button 
                 onClick={onClose}
-                className="w-full py-4 my-4 bg-[var(--secondary-system-background)]/95 backdrop-blur-2xl rounded-2xl text-[var(--label)] text-lg font-semibold shadow-lg active:scale-[0.98] transition-transform"
+                className="w-full py-4 mb-4 bg-[var(--secondary-system-background)]/80 backdrop-blur-3xl border border-white/10 rounded-[24px] text-[var(--label)] text-lg font-semibold shadow-xl active:scale-[0.98] transition-transform"
               >
                 Cancel
               </button>
@@ -161,71 +170,70 @@ export function ShareSheet({ isOpen, onClose, profile }: ShareSheetProps) {
         )}
       </AnimatePresence>
 
-      {/* QR Code Full Screen View */}
+      {/* QR Code Modal View */}
       <AnimatePresence>
         {showQRCode && (
           <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.9 }}
-            className="fixed inset-0 z-[100] bg-[var(--system-background)] flex flex-col items-center justify-center p-8"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/60 backdrop-blur-xl"
           >
-            <button
-              onClick={() => {
-                haptics.light();
-                setShowQRCode(false);
-              }}
-              className="absolute top-12 right-6 p-2 rounded-full bg-[var(--secondary-system-background)] text-[var(--label)]"
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              className="relative w-full max-w-sm bg-[var(--secondary-system-background)]/80 backdrop-blur-3xl border border-white/10 rounded-[40px] p-8 shadow-2xl flex flex-col items-center"
             >
-              <X className="w-6 h-6" />
-            </button>
+              <button
+                onClick={() => {
+                  haptics.light();
+                  setShowQRCode(false);
+                }}
+                className="absolute top-6 right-6 p-2 rounded-full bg-white/10 hover:bg-white/20 text-[var(--label)] transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
 
-            <div className="w-full max-w-sm flex flex-col items-center gap-8">
-              <div className="text-center">
-                <div className="relative w-24 h-24 mx-auto mb-4">
+              <div className="flex flex-col items-center mb-8 mt-4">
+                <div className="relative w-20 h-20 mb-4">
+                  <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-blue-500 to-purple-500 animate-pulse blur-md opacity-40" />
                   <img 
                     src={profile.avatar} 
                     alt={profile.name}
-                    className="w-full h-full rounded-full object-cover border-4 border-[var(--system-background)] shadow-xl"
+                    className="relative w-full h-full rounded-full object-cover border-2 border-white/20 shadow-xl"
                   />
                 </div>
-                <h3 className="text-2xl font-bold text-[var(--label)]">{profile.name}</h3>
-                <p className="text-[var(--secondary-label)] font-medium">{profile.handle}</p>
+                <h3 className="text-xl font-bold text-[var(--label)]">{profile.name}</h3>
+                <p className="text-[var(--secondary-label)] font-medium text-sm">{profile.handle}</p>
               </div>
 
-              <div className="p-8 bg-white rounded-[40px] shadow-2xl border border-black/5">
+              <div className="p-6 bg-white rounded-[32px] shadow-inner mb-8">
                 <QRCodeSVG 
                   value={shareUrl}
-                  size={240}
+                  size={200}
                   level="H"
                   includeMargin={false}
                   imageSettings={profile.avatar ? {
                     src: profile.avatar,
                     x: undefined,
                     y: undefined,
-                    height: 48,
-                    width: 48,
+                    height: 40,
+                    width: 40,
                     excavate: true,
                   } : undefined}
                 />
               </div>
 
-              <div className="text-center space-y-2">
-                <p className="text-[var(--secondary-label)] text-sm font-medium">Scan this code to view profile</p>
-                <div className="flex items-center justify-center gap-2 text-[var(--label)] font-bold text-lg">
-                  <Share2 className="w-5 h-5" />
-                  <span>figment.social</span>
-                </div>
-              </div>
-
               <button
                 onClick={handleCopy}
-                className="mt-4 flex items-center gap-2 px-8 py-4 bg-[var(--label)] text-[var(--system-background)] rounded-full font-bold shadow-xl active:scale-95 transition-transform"
+                className="w-full flex items-center justify-center gap-2 py-4 bg-[var(--label)] text-[var(--system-background)] rounded-2xl font-bold shadow-lg active:scale-[0.98] transition-transform"
               >
                 {isCopied ? <Check className="w-5 h-5" /> : <LinkIcon className="w-5 h-5" />}
                 {isCopied ? 'Copied!' : 'Copy Profile Link'}
               </button>
-            </div>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>

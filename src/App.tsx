@@ -113,9 +113,18 @@ export default function App() {
   const [activeSection, setActiveSection] = useState<{ id: string, type: MediaType, title: string } | null>(null);
   
   const [activeTab, setActiveTab] = useState<TabType>('profile');
+  const [deferredActiveTab, setDeferredActiveTab] = useState<TabType>('profile');
   const [albums, setAlbums] = useState<Album[]>([]);
   const [isDataLoading, setIsDataLoading] = useState(false);
   const [isOwnProfile, setIsOwnProfile] = useState<boolean>(true);
+
+  // Sync deferred tab after a tiny delay to allow the bottom bar animation to start smoothly
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDeferredActiveTab(activeTab);
+    }, 50); // 50ms delay is usually enough to let the animation start
+    return () => clearTimeout(timer);
+  }, [activeTab]);
 
   const profileRef = React.useRef(profile);
   useEffect(() => {
@@ -323,8 +332,8 @@ export default function App() {
           {/* iOS Status Bar Spacer (simulated for desktop view) */}
           <div className="hidden sm:block h-6 w-full bg-[var(--system-background)] dark:bg-[var(--secondary-system-background)] shrink-0" />
           
-          <div className="flex-1 overflow-hidden relative flex flex-col pb-[calc(84px+env(safe-area-inset-bottom))] sm:pb-[100px] pt-safe-top">
-            <main className={`flex-1 overflow-y-auto hide-scrollbar scroll-container pb-28 space-y-2 ${activeTab === 'profile' ? 'block' : 'hidden'}`}>
+          <div className="flex-1 overflow-hidden relative flex flex-col pt-safe-top">
+            <main className={`flex-1 overflow-y-auto hide-scrollbar scroll-container pb-28 space-y-2 ${deferredActiveTab === 'profile' ? 'block' : 'hidden'}`}>
               <Header profile={profile} isOwnProfile={isOwnProfile} onRecommendClick={() => setIsRecommendModalOpen(true)} onAuthClick={() => setIsAuthModalOpen(true)} />
               <div className="w-full h-[0.5px] bg-[var(--separator)] my-4" />
               
@@ -422,22 +431,22 @@ export default function App() {
               <div className="h-4" /> {/* Spacer */}
             </main>
 
-            <main className={`flex-1 overflow-hidden hide-scrollbar pb-28 flex flex-col ${activeTab === 'diary' ? 'flex' : 'hidden'}`}>
+            <main className={`flex-1 overflow-hidden hide-scrollbar pb-28 flex flex-col ${deferredActiveTab === 'diary' ? 'flex' : 'hidden'}`}>
               <div className="px-4 pt-4 pb-2 shrink-0">
                 <h2 className="font-serif text-2xl font-semibold text-[var(--label)]">Diary</h2>
               </div>
               <DiaryView entries={diary} />
             </main>
 
-            <main className={`flex-1 overflow-hidden hide-scrollbar pb-28 flex flex-col ${activeTab === 'feed' ? 'flex' : 'hidden'}`}>
+            <main className={`flex-1 overflow-hidden hide-scrollbar pb-28 flex flex-col ${deferredActiveTab === 'feed' ? 'flex' : 'hidden'}`}>
               <FeedView />
             </main>
 
-            <main className={`flex-1 overflow-y-auto hide-scrollbar scroll-container pb-28 flex flex-col ${activeTab === 'recommendations' ? 'flex' : 'hidden'}`}>
+            <main className={`flex-1 overflow-y-auto hide-scrollbar scroll-container pb-28 flex flex-col ${deferredActiveTab === 'recommendations' ? 'flex' : 'hidden'}`}>
               <RecommendationsView viewingUserId={viewingUserId} />
             </main>
 
-            <main className={`flex-1 overflow-y-auto hide-scrollbar scroll-container pb-28 flex flex-col ${activeTab === 'add' ? 'flex' : 'hidden'}`}>
+            <main className={`flex-1 overflow-y-auto hide-scrollbar scroll-container pb-28 flex flex-col ${deferredActiveTab === 'add' ? 'flex' : 'hidden'}`}>
               <AddView onAddItem={handleAddItem} initialType={activeSection?.type} />
             </main>
           </div>
