@@ -50,7 +50,7 @@ const DiaryViewComponent = ({ entries }: { entries: DiaryEntry[] }) => {
         </div>
       </div>
 
-      <div ref={parentRef} className="flex-1 overflow-y-auto px-4 hide-scrollbar scroll-container">
+      <div ref={parentRef} className="flex-1 overflow-y-auto px-4 hide-scrollbar scroll-container pb-28">
         <div className="flex flex-col">
           {sorted.map((entry) => {
             return (

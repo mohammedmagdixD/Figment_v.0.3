@@ -194,7 +194,7 @@ export function AddView({ onAddItem, initialType }: { onAddItem: (item: SearchRe
 
       {/* Content Area */}
       <div 
-        className="flex-1 overflow-y-auto px-4 hide-scrollbar"
+        className="flex-1 overflow-y-auto px-4 hide-scrollbar pb-28"
         onClick={() => isFocused && handleClearFocus()}
       >
         <AnimatePresence mode="wait">

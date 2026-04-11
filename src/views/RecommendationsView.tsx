@@ -145,7 +145,7 @@ export function RecommendationsView({ viewingUserId }: { viewingUserId?: string 
   }
 
   return (
-    <div className="pb-4 px-4 pt-4">
+    <div className="pb-28 px-4 pt-4">
       <h2 className="font-serif text-2xl font-semibold text-[var(--label)] mb-4">
         For You
       </h2>

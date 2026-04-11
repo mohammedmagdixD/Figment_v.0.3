@@ -113,18 +113,11 @@ export default function App() {
   const [activeSection, setActiveSection] = useState<{ id: string, type: MediaType, title: string } | null>(null);
   
   const [activeTab, setActiveTab] = useState<TabType>('profile');
-  const [deferredActiveTab, setDeferredActiveTab] = useState<TabType>('profile');
+  const [isPending, startTransition] = React.useTransition();
+  const [renderedTab, setRenderedTab] = useState<TabType>('profile');
   const [albums, setAlbums] = useState<Album[]>([]);
   const [isDataLoading, setIsDataLoading] = useState(false);
   const [isOwnProfile, setIsOwnProfile] = useState<boolean>(true);
-
-  // Sync deferred tab after a tiny delay to allow the bottom bar animation to start smoothly
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDeferredActiveTab(activeTab);
-    }, 50); // 50ms delay is usually enough to let the animation start
-    return () => clearTimeout(timer);
-  }, [activeTab]);
 
   const profileRef = React.useRef(profile);
   useEffect(() => {
@@ -145,19 +138,23 @@ export default function App() {
         
         if (path === '/' || path === '') {
           setActiveTab('profile');
+          setRenderedTab('profile');
         } else if (handleMatch) {
           const handle = handleMatch[1];
           const foundUser = await getUserByHandle(handle);
           if (foundUser) {
             targetUserId = foundUser.id;
             setActiveTab('profile');
+            setRenderedTab('profile');
           } else {
             console.error('User not found for handle:', handle);
           }
         } else {
           const tabMatch = path.match(/^\/(feed|diary|add)/);
           if (tabMatch) {
-            setActiveTab(tabMatch[1] as TabType);
+            const tab = tabMatch[1] as TabType;
+            setActiveTab(tab);
+            setRenderedTab(tab);
           }
         }
 
@@ -333,7 +330,7 @@ export default function App() {
           <div className="hidden sm:block h-6 w-full bg-[var(--system-background)] dark:bg-[var(--secondary-system-background)] shrink-0" />
           
           <div className="flex-1 overflow-hidden relative flex flex-col pt-safe-top">
-            <main className={`flex-1 overflow-y-auto hide-scrollbar scroll-container pb-28 space-y-2 ${deferredActiveTab === 'profile' ? 'block' : 'hidden'}`}>
+            <main className={`flex-1 overflow-y-auto hide-scrollbar scroll-container pb-28 space-y-2 ${renderedTab === 'profile' ? 'block' : 'hidden'}`}>
               <Header profile={profile} isOwnProfile={isOwnProfile} onRecommendClick={() => setIsRecommendModalOpen(true)} onAuthClick={() => setIsAuthModalOpen(true)} />
               <div className="w-full h-[0.5px] bg-[var(--separator)] my-4" />
               
@@ -431,22 +428,22 @@ export default function App() {
               <div className="h-4" /> {/* Spacer */}
             </main>
 
-            <main className={`flex-1 overflow-hidden hide-scrollbar pb-28 flex flex-col ${deferredActiveTab === 'diary' ? 'flex' : 'hidden'}`}>
+            <main className={`flex-1 overflow-hidden hide-scrollbar flex flex-col ${renderedTab === 'diary' ? 'flex' : 'hidden'}`}>
               <div className="px-4 pt-4 pb-2 shrink-0">
                 <h2 className="font-serif text-2xl font-semibold text-[var(--label)]">Diary</h2>
               </div>
               <DiaryView entries={diary} />
             </main>
 
-            <main className={`flex-1 overflow-hidden hide-scrollbar pb-28 flex flex-col ${deferredActiveTab === 'feed' ? 'flex' : 'hidden'}`}>
+            <main className={`flex-1 overflow-hidden hide-scrollbar flex flex-col ${renderedTab === 'feed' ? 'flex' : 'hidden'}`}>
               <FeedView />
             </main>
 
-            <main className={`flex-1 overflow-y-auto hide-scrollbar scroll-container pb-28 flex flex-col ${deferredActiveTab === 'recommendations' ? 'flex' : 'hidden'}`}>
+            <main className={`flex-1 overflow-y-auto hide-scrollbar scroll-container pb-28 flex flex-col ${renderedTab === 'recommendations' ? 'flex' : 'hidden'}`}>
               <RecommendationsView viewingUserId={viewingUserId} />
             </main>
 
-            <main className={`flex-1 overflow-y-auto hide-scrollbar scroll-container pb-28 flex flex-col ${deferredActiveTab === 'add' ? 'flex' : 'hidden'}`}>
+            <main className={`flex-1 overflow-y-auto hide-scrollbar scroll-container flex flex-col ${renderedTab === 'add' ? 'flex' : 'hidden'}`}>
               <AddView onAddItem={handleAddItem} initialType={activeSection?.type} />
             </main>
           </div>
@@ -459,6 +456,7 @@ export default function App() {
                 if (user) {
                   setViewingUserId(user.id);
                   setActiveTab('add');
+                  startTransition(() => setRenderedTab('add'));
                   window.history.pushState({}, '', '/add');
                 } else {
                   setIsAuthModalOpen(true);
@@ -470,6 +468,7 @@ export default function App() {
                 setActiveSection(null);
               }
               setActiveTab(tab);
+              startTransition(() => setRenderedTab(tab));
               
               let newPath = `/${tab}`;
               if (tab === 'profile') {

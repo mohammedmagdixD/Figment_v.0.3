@@ -9,6 +9,14 @@ interface BottomTabBarProps {
   onTabChange: (tab: TabType) => void;
 }
 
+const tabs = [
+  { id: 'recommendations', icon: Sparkles, label: 'For You', width: 115 },
+  { id: 'feed', icon: LayoutGrid, label: 'Feed', width: 95 },
+  { id: 'add', icon: Plus, label: 'Add', width: 90 },
+  { id: 'diary', icon: Book, label: 'Diary', width: 95 },
+  { id: 'profile', icon: User, label: 'Profile', width: 105 },
+] as const;
+
 export function BottomTabBar({ activeTab, onTabChange }: BottomTabBarProps) {
   const handleTabChange = (tab: TabType) => {
     if (activeTab !== tab) {
@@ -21,17 +29,33 @@ export function BottomTabBar({ activeTab, onTabChange }: BottomTabBarProps) {
     }
   };
 
-  const tabs = [
-    { id: 'recommendations', icon: Sparkles, label: 'For You', width: 115 },
-    { id: 'feed', icon: LayoutGrid, label: 'Feed', width: 95 },
-    { id: 'add', icon: Plus, label: 'Add', width: 90 },
-    { id: 'diary', icon: Book, label: 'Diary', width: 95 },
-    { id: 'profile', icon: User, label: 'Profile', width: 105 },
-  ] as const;
+  const activeIndex = tabs.findIndex(t => t.id === activeTab);
+  const activeTabConfig = tabs[activeIndex] || tabs[0];
+
+  // Deterministic calculation of the active pill's position.
+  // This completely bypasses layoutId bugs and guarantees a smooth slide.
+  // padding (6px) + (index * inactiveWidth (48px)) + (index * gap (6px))
+  const pillLeft = 6 + (activeIndex * 48) + (activeIndex * 6);
+  const pillWidth = activeTabConfig.width;
 
   return (
     <div className="fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] left-0 right-0 z-40 flex justify-center px-4 pointer-events-none">
-      <div className="flex items-center gap-1.5 p-1.5 bg-[var(--secondary-system-background)]/80 backdrop-blur-2xl border border-[var(--separator)] shadow-[0_8px_30px_rgba(0,0,0,0.12)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.5)] rounded-full pointer-events-auto">
+      <motion.div 
+        layout
+        transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+        className="relative flex items-center gap-1.5 p-1.5 bg-[var(--secondary-system-background)]/80 backdrop-blur-2xl border border-[var(--separator)] shadow-sm dark:shadow-none rounded-full pointer-events-auto overflow-hidden"
+      >
+        {/* The sliding active background pill */}
+        <motion.div
+          className="absolute top-1.5 bottom-1.5 bg-[var(--label)] rounded-full z-0"
+          initial={false}
+          animate={{ 
+            left: pillLeft, 
+            width: pillWidth 
+          }}
+          transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+        />
+
         {tabs.map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
@@ -40,45 +64,43 @@ export function BottomTabBar({ activeTab, onTabChange }: BottomTabBarProps) {
             <motion.button
               key={tab.id}
               onClick={() => handleTabChange(tab.id as TabType)}
-              layout
+              initial={false}
               animate={{ width: isActive ? tab.width : 48 }}
               whileTap={{ scale: 0.92 }}
               transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
-              className="relative flex items-center justify-center h-12 rounded-full outline-none tap-highlight-transparent overflow-hidden"
+              className="relative z-10 flex items-center justify-center h-12 rounded-full outline-none tap-highlight-transparent overflow-hidden"
               style={{ WebkitTapHighlightColor: 'transparent' }}
               aria-label={tab.label}
             >
-              {isActive && (
-                <motion.div
-                  layoutId="active-tab-indicator"
-                  className="absolute inset-0 bg-[var(--label)] rounded-full"
-                  transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
-                />
-              )}
-              
-              <div className="relative z-10 flex items-center justify-center gap-1.5 px-3 w-full">
+              <div className="flex items-center justify-center px-3 w-full h-full">
                 <Icon 
                   className={`w-5 h-5 shrink-0 transition-colors duration-300 ${
                     isActive ? 'text-[var(--system-background)]' : 'text-[var(--secondary-label)]'
                   }`} 
                   strokeWidth={isActive ? 2.5 : 2}
                 />
-                {isActive && (
-                  <motion.span
-                    layout
-                    initial={{ opacity: 0, x: -5 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.1, duration: 0.4, type: "spring", bounce: 0 }}
-                    className="text-sm font-semibold text-[var(--system-background)] whitespace-nowrap"
-                  >
+                
+                <motion.div
+                  initial={false}
+                  animate={{ 
+                    width: isActive ? 'auto' : 0,
+                    opacity: isActive ? 1 : 0,
+                    filter: isActive ? 'blur(0px)' : 'blur(4px)',
+                    x: isActive ? 0 : -10,
+                    marginLeft: isActive ? 6 : 0
+                  }}
+                  transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                  className="overflow-hidden whitespace-nowrap flex items-center"
+                >
+                  <span className="text-sm font-semibold text-[var(--system-background)]">
                     {tab.label}
-                  </motion.span>
-                )}
+                  </span>
+                </motion.div>
               </div>
             </motion.button>
           );
         })}
-      </div>
+      </motion.div>
     </div>
   );
 }

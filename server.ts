@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
-import { FetchError, isFetchError } from './src/types/api.ts';
+import { isFetchError } from './src/types/api.ts';
+import type { FetchError } from './src/types/api.ts';
 import { createServer as createViteServer } from 'vite';
 import path from 'path';
 import fs from 'fs';
