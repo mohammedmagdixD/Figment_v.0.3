@@ -83,7 +83,7 @@ export function BottomTabBar({ activeTab, onTabChange }: BottomTabBarProps) {
                 <motion.div
                   initial={false}
                   animate={{ 
-                    width: isActive ? 'auto' : 0,
+                    width: isActive ? tab.width - 50 : 0,
                     opacity: isActive ? 1 : 0,
                     filter: isActive ? 'blur(0px)' : 'blur(4px)',
                     x: isActive ? 0 : -10,
