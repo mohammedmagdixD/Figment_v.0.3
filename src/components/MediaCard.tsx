@@ -11,7 +11,7 @@ interface MediaCardProps {
   playingId: string | null;
   isPriority?: boolean;
   onItemClick: (item: UniversalMediaData) => void;
-  onPlayToggle: (url: string, id: string) => void;
+  onPlayToggle: (url: string, id: string, title?: string, artist?: string, artworkUrl?: string) => void;
   onAddToAlbum?: (item: UniversalMediaData) => void;
 }
 
@@ -59,7 +59,7 @@ const MediaCardComponent = ({
     }
 
     if (playUrl) {
-      onPlayToggle(playUrl, item.id);
+      onPlayToggle(playUrl, item.id, title, subtitle, imageUrl);
     } else if (isMusic) {
       setIsFetchingAudio(true);
       try {
@@ -67,7 +67,7 @@ const MediaCardComponent = ({
         const res = await fetchWithBackoff(`https://itunes.apple.com/search?term=${encodeURIComponent(query)}&entity=song&limit=1`);
         const data = await res.json();
         if (data.results && data.results.length > 0 && data.results[0].previewUrl) {
-          onPlayToggle(data.results[0].previewUrl, item.id);
+          onPlayToggle(data.results[0].previewUrl, item.id, title, subtitle, imageUrl);
         } else {
           console.warn('No preview URL found on iTunes');
         }
@@ -104,9 +104,9 @@ const MediaCardComponent = ({
             referrerPolicy="no-referrer"
           />
         ) : (
-          <div className="absolute inset-0 flex items-center justify-center bg-[var(--secondary-system-background)] p-4 text-center overflow-auto">
-            <span className="text-[8px] font-mono text-[var(--secondary-label)] break-all">
-              {JSON.stringify(item).substring(0, 200)}
+          <div className="absolute inset-0 flex items-center justify-center bg-[var(--secondary-system-background)] p-4 text-center">
+            <span className="font-serif text-2xl text-[var(--secondary-label)] opacity-50">
+              {title ? title.charAt(0).toUpperCase() : '?'}
             </span>
           </div>
         )}

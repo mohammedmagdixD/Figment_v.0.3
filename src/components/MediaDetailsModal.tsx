@@ -31,7 +31,6 @@ export function MediaDetailsModal({ item, onClose, onLogEpisode, fullScreen, onR
 
   const [mediaDetails, setMediaDetails] = useState<any | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
   
   const [loggingEpisode, setLoggingEpisode] = useState<PodcastEpisode | null>(null);
   const [rating, setRating] = useState(0);
@@ -199,7 +198,7 @@ export function MediaDetailsModal({ item, onClose, onLogEpisode, fullScreen, onR
     } else if (item.type === 'manga' && mediaDetails) {
       normalizedData = malMangaAdapter(mediaDetails);
     } else if (item.type === 'podcast' && mediaDetails) {
-      normalizedData = itunesPodcastAdapter(mediaDetails, item, setLoggingEpisode, searchQuery, setSearchQuery);
+      normalizedData = itunesPodcastAdapter(mediaDetails, item, setLoggingEpisode);
     } else if ((item.type === 'book' || item.type === 'webnovel') && mediaDetails) {
       normalizedData = googleBooksAdapter(mediaDetails, item.type);
     } else if ((item.type === 'music' || item.type === 'song' || item.type === 'album') && mediaDetails) {

@@ -277,9 +277,9 @@ export default function App() {
       const mediaItemToLog = {
         id: episode.id,
         title: episode.title,
-        subtitle: podcast.title,
-        image: podcast.image,
-        type: 'podcast',
+        subtitle: podcast.title || podcast.header?.title,
+        image: episode.image || podcast.images?.posterUrl || podcast.image_url || podcast.image,
+        type: 'podcast-episode',
         description: episode.description
       };
       

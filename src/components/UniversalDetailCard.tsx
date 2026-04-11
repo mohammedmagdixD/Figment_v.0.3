@@ -104,13 +104,51 @@ export function UniversalDetailCard({ data }: UniversalDetailCardProps) {
       if (audioRef.current) {
         audioRef.current.pause();
       }
+      
+      // Pause all other audio elements on the page
+      document.querySelectorAll('audio').forEach(audio => {
+        if (audio !== audioRef.current) {
+          audio.pause();
+        }
+      });
+      window.dispatchEvent(new CustomEvent('pause-all-audio'));
+
       const audio = new Audio(url);
       audioRef.current = audio;
       audio.play();
+      
+      if ('mediaSession' in navigator) {
+        navigator.mediaSession.metadata = new MediaMetadata({
+          title: data.header.title || 'Unknown Title',
+          artist: data.header.subtitle || 'Unknown Artist',
+          artwork: (data.images.posterUrl || data.images.backdropUrl) ? [
+            { src: data.images.posterUrl || data.images.backdropUrl || '', sizes: '96x96', type: 'image/jpeg' },
+            { src: data.images.posterUrl || data.images.backdropUrl || '', sizes: '128x128', type: 'image/jpeg' },
+            { src: data.images.posterUrl || data.images.backdropUrl || '', sizes: '192x192', type: 'image/jpeg' },
+            { src: data.images.posterUrl || data.images.backdropUrl || '', sizes: '256x256', type: 'image/jpeg' },
+            { src: data.images.posterUrl || data.images.backdropUrl || '', sizes: '384x384', type: 'image/jpeg' },
+            { src: data.images.posterUrl || data.images.backdropUrl || '', sizes: '512x512', type: 'image/jpeg' },
+          ] : []
+        });
+      }
+
       setPlayingId(id);
       audio.onended = () => setPlayingId(null);
+      audio.onpause = () => setPlayingId(null);
+      audio.onplay = () => setPlayingId(id);
     }
   };
+
+  useEffect(() => {
+    const handlePauseAll = () => {
+      if (playingId && audioRef.current) {
+        audioRef.current.pause();
+        setPlayingId(null);
+      }
+    };
+    window.addEventListener('pause-all-audio', handlePauseAll);
+    return () => window.removeEventListener('pause-all-audio', handlePauseAll);
+  }, [playingId]);
 
   return (
     <div className="flex flex-col pb-8">

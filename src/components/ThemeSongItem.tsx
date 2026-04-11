@@ -53,6 +53,8 @@ export function ThemeSongItem({ themeString }: ThemeSongItemProps) {
     if (songData?.previewUrl) {
       audioRef.current = new Audio(songData.previewUrl);
       audioRef.current.addEventListener('ended', () => setIsPlaying(false));
+      audioRef.current.addEventListener('pause', () => setIsPlaying(false));
+      audioRef.current.addEventListener('play', () => setIsPlaying(true));
     }
     return () => {
       if (audioRef.current) {
@@ -79,6 +81,23 @@ export function ThemeSongItem({ themeString }: ThemeSongItemProps) {
       window.dispatchEvent(new CustomEvent('pause-all-audio'));
       
       audioRef.current.play();
+      
+      if ('mediaSession' in navigator) {
+        const artworkUrl = songData?.artworkUrl100 || songData?.artworkUrl60 || '';
+        navigator.mediaSession.metadata = new MediaMetadata({
+          title: songData?.trackName || themeString.replace(/^\d+:\s*/, '').split(' by ')[0].replace(/"/g, ''),
+          artist: songData?.artistName || themeString.split(' by ')[1]?.split('(')[0]?.trim() || 'Unknown Artist',
+          artwork: artworkUrl ? [
+            { src: artworkUrl, sizes: '96x96', type: 'image/jpeg' },
+            { src: artworkUrl, sizes: '128x128', type: 'image/jpeg' },
+            { src: artworkUrl, sizes: '192x192', type: 'image/jpeg' },
+            { src: artworkUrl, sizes: '256x256', type: 'image/jpeg' },
+            { src: artworkUrl, sizes: '384x384', type: 'image/jpeg' },
+            { src: artworkUrl, sizes: '512x512', type: 'image/jpeg' },
+          ] : []
+        });
+      }
+
       setIsPlaying(true);
     }
   };

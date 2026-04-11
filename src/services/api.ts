@@ -84,6 +84,7 @@ export interface PodcastEpisode {
   date: string;
   duration?: number;
   previewUrl?: string;
+  image?: string;
 }
 
 export interface MovieDetails {
@@ -447,13 +448,14 @@ export async function getPodcastEpisodes(podcastId: string): Promise<PodcastEpis
     if (!res.ok) throw new Error(`iTunes API error: ${res.status}`);
     const data = await res.json();
     // The first result is the podcast itself, the rest are episodes
-    return (data.results || []).slice(1).map((item: { trackId?: number; trackName: string; description?: string; shortDescription?: string; releaseDate?: string; trackTimeMillis?: number; episodeUrl?: string }) => ({
+    return (data.results || []).slice(1).map((item: { trackId?: number; trackName: string; description?: string; shortDescription?: string; releaseDate?: string; trackTimeMillis?: number; episodeUrl?: string; artworkUrl600?: string; artworkUrl160?: string }) => ({
       id: item.trackId?.toString(),
       title: item.trackName,
       description: item.description || item.shortDescription || '',
       date: item.releaseDate,
       duration: item.trackTimeMillis,
-      previewUrl: item.episodeUrl
+      previewUrl: item.episodeUrl,
+      image: item.artworkUrl600 || item.artworkUrl160 || ''
     }));
   } catch (e) {
     console.error('Failed to fetch podcast episodes:', e);

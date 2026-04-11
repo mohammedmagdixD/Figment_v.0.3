@@ -367,29 +367,71 @@ export function tmdbTvAdapter(data: TMDBTvDetails, item: SearchResult): Universa
   return baseTmdbAdapter(data, item, 'tv');
 }
 
+function PodcastEpisodesList({ episodes, item, onLogEpisode }: { episodes: any[], item: any, onLogEpisode: (ep: any) => void }) {
+  const [searchQuery, setSearchQuery] = React.useState('');
+
+  const filteredEpisodes = episodes.filter(ep => 
+    (ep.title || '').toLowerCase().includes(searchQuery.toLowerCase()) || 
+    (ep.description || '').toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  return (
+    <>
+      <div className="relative mb-4">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--secondary-label)]" />
+        <input
+          type="text"
+          placeholder="Search episodes..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="w-full bg-[var(--secondary-system-background)] border border-[var(--separator)] rounded-xl py-2 pl-9 pr-3 text-sm font-sans text-[var(--label)] placeholder:text-[var(--secondary-label)] focus:outline-none focus:ring-2 focus:ring-[var(--label)]/10 transition-all"
+        />
+      </div>
+      {filteredEpisodes.map((ep: any, index: number) => (
+        <UniversalListItem 
+          key={ep.id || `ep-${index}`}
+          title={ep.title}
+          subtitle={ep.date ? new Date(ep.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : ''}
+          imageUrl={ep.image || item.images?.posterUrl || item.image_url || item.image}
+          icon="music"
+          imageStyle="square"
+          onClick={() => onLogEpisode(ep)}
+          rightContent={
+            <motion.button 
+              whileTap={{ scale: 0.95 }}
+              transition={{ type: "spring", stiffness: 600, damping: 35 }}
+              onClick={(e) => {
+                e.stopPropagation();
+                haptics.light();
+                onLogEpisode(ep);
+              }}
+              className="shrink-0 text-xs font-medium bg-[var(--system-background)] border border-[var(--separator)] px-3 py-1.5 rounded-full hover:bg-[var(--tertiary-system-background)] text-[var(--label)] transition-colors"
+            >
+              Rate
+            </motion.button>
+          }
+        />
+      ))}
+    </>
+  );
+}
+
 export function itunesPodcastAdapter(
   episodes: any[], 
   item: any, 
-  onLogEpisode: (ep: any) => void,
-  searchQuery: string,
-  setSearchQuery: (query: string) => void
+  onLogEpisode: (ep: any) => void
 ): UniversalMediaData {
-  const filteredEpisodes = episodes.filter(ep => 
-    ep.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-    ep.description.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
   return {
     id: item.id.toString(),
     mediaType: 'podcast',
     images: {
-      backdropUrl: item.image,
-      posterUrl: item.image,
+      backdropUrl: item.images?.backdropUrl || item.images?.posterUrl || item.image_url || item.image,
+      posterUrl: item.images?.posterUrl || item.image_url || item.image,
       backdropFallback: true
     },
     header: {
-      title: item.title,
-      subtitle: item.subtitle
+      title: item.title || item.header?.title,
+      subtitle: item.subtitle || item.header?.subtitle
     },
     stats: [],
     metadata: [
@@ -401,43 +443,7 @@ export function itunesPodcastAdapter(
         ...(episodes && episodes.length > 0 ? [{
           type: 'episodes',
           title: 'Episodes',
-          data: [
-            <div key="search-bar" className="relative mb-4">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--secondary-label)]" />
-              <input
-                type="text"
-                placeholder="Search episodes..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-[var(--secondary-system-background)] border border-[var(--separator)] rounded-xl py-2 pl-9 pr-3 text-sm font-sans text-[var(--label)] placeholder:text-[var(--secondary-label)] focus:outline-none focus:ring-2 focus:ring-[var(--label)]/10 transition-all"
-              />
-            </div>,
-            ...filteredEpisodes.map((ep: any) => (
-              <UniversalListItem 
-                key={ep.id}
-                title={ep.title}
-                subtitle={new Date(ep.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                imageUrl={item.image}
-                icon="music"
-                imageStyle="square"
-                onClick={() => onLogEpisode(ep)}
-                rightContent={
-                  <motion.button 
-                    whileTap={{ scale: 0.95 }}
-                    transition={{ type: "spring", stiffness: 600, damping: 35 }}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      haptics.light();
-                      onLogEpisode(ep);
-                    }}
-                    className="shrink-0 text-xs font-medium bg-[var(--system-background)] border border-[var(--separator)] px-3 py-1.5 rounded-full hover:bg-[var(--tertiary-system-background)] text-[var(--label)] transition-colors"
-                  >
-                    Rate
-                  </motion.button>
-                }
-              />
-            ))
-          ]
+          data: <PodcastEpisodesList episodes={episodes} item={item} onLogEpisode={onLogEpisode} />
         }] : [])
       ]
     }
@@ -591,13 +597,13 @@ export function genericAdapter(item: any): UniversalMediaData {
     id: item.id.toString(),
     mediaType: item.type,
     images: {
-      backdropUrl: item.image,
-      posterUrl: item.image,
+      backdropUrl: item.images?.backdropUrl || item.images?.posterUrl || item.image_url || item.image,
+      posterUrl: item.images?.posterUrl || item.image_url || item.image,
       backdropFallback: true
     },
     header: {
-      title: item.title,
-      subtitle: item.subtitle
+      title: item.title || item.header?.title,
+      subtitle: item.subtitle || item.header?.subtitle
     },
     stats: [],
     metadata: [
