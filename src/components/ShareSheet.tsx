@@ -1,8 +1,8 @@
 import { motion, AnimatePresence } from 'motion/react';
-import { QrCode, Link as LinkIcon, X, Check, Copy, Share2, MessageCircle, Twitter, Instagram, Send } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { QrCode, Link as LinkIcon, X, Check, Copy, Share2, MessageCircle, Twitter, Instagram, Send, Download } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
 import { haptics } from '../utils/haptics';
-import { QRCodeSVG } from 'qrcode.react';
+import { QRCodeCanvas } from 'qrcode.react';
 
 interface ShareSheetProps {
   isOpen: boolean;
@@ -17,6 +17,7 @@ interface ShareSheetProps {
 export function ShareSheet({ isOpen, onClose, profile }: ShareSheetProps) {
   const [isCopied, setIsCopied] = useState(false);
   const [showQRCode, setShowQRCode] = useState(false);
+  const qrRef = useRef<HTMLCanvasElement>(null);
   
   const origin = window.location.origin;
   const shareUrl = `${origin}/@${profile.handle.replace('@', '')}`;
@@ -33,35 +34,55 @@ export function ShareSheet({ isOpen, onClose, profile }: ShareSheetProps) {
     }
   };
 
+  const handleDownloadQR = () => {
+    if (!qrRef.current) return;
+    
+    try {
+      const canvas = qrRef.current;
+      const url = canvas.toDataURL('image/png');
+      const link = document.createElement('a');
+      link.download = `${profile.handle.replace('@', '')}-qr.png`;
+      link.href = url;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      haptics.success();
+    } catch (err) {
+      console.error('Failed to download QR code:', err);
+      haptics.error();
+    }
+  };
+
   const socialOptions = [
     { 
       name: 'WhatsApp', 
-      icon: <MessageCircle className="w-6 h-6" />, 
-      color: 'bg-[#25D366]', 
+      icon: <MessageCircle className="w-5 h-5" />, 
+      hoverClass: 'hover:bg-whispering-leaf hover:border-whispering-leaf hover:shadow-[0_0_15px_rgba(209,234,205,0.5)]', 
       url: `https://wa.me/?text=${encodeURIComponent(`Check out ${profile.name}'s profile on Figment: ${shareUrl}`)}` 
     },
     { 
       name: 'Twitter', 
-      icon: <Twitter className="w-6 h-6" />, 
-      color: 'bg-[#000000]', 
+      icon: <Twitter className="w-5 h-5" />, 
+      hoverClass: 'hover:bg-quiet-sky hover:border-quiet-sky hover:shadow-[0_0_15px_rgba(196,227,243,0.5)]', 
       url: `https://twitter.com/intent/tweet?text=${encodeURIComponent(`Check out ${profile.name}'s profile on Figment!`)}&url=${encodeURIComponent(shareUrl)}` 
     },
     { 
       name: 'Telegram', 
-      icon: <Send className="w-6 h-6" />, 
-      color: 'bg-[#0088cc]', 
+      icon: <Send className="w-5 h-5" />, 
+      hoverClass: 'hover:bg-quiet-sky hover:border-quiet-sky hover:shadow-[0_0_15px_rgba(196,227,243,0.5)]', 
       url: `https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(`Check out ${profile.name}'s profile on Figment!`)}` 
     },
     { 
       name: 'Instagram', 
-      icon: <Instagram className="w-6 h-6" />, 
-      color: 'bg-gradient-to-tr from-[#f9ce34] via-[#ee2a7b] to-[#6228d7]', 
-      url: `https://www.instagram.com/` // Instagram doesn't support direct link sharing via URL easily, but we can open the app
+      icon: <Instagram className="w-5 h-5" />, 
+      hoverClass: 'hover:bg-cherry-blossom hover:border-cherry-blossom hover:shadow-[0_0_15px_rgba(244,200,221,0.5)]', 
+      url: `https://www.instagram.com/` 
     },
     { 
       name: 'Messages', 
-      icon: <MessageCircle className="w-6 h-6" />, 
-      color: 'bg-[#34C759]', 
+      icon: <MessageCircle className="w-5 h-5" />, 
+      hoverClass: 'hover:bg-whispering-leaf hover:border-whispering-leaf hover:shadow-[0_0_15px_rgba(209,234,205,0.5)]', 
       url: `sms:?&body=${encodeURIComponent(`Check out ${profile.name}'s profile on Figment: ${shareUrl}`)}` 
     },
   ];
@@ -88,70 +109,93 @@ export function ShareSheet({ isOpen, onClose, profile }: ShareSheetProps) {
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
               className="fixed bottom-0 left-0 right-0 z-[70] px-4 pb-safe-bottom"
             >
-              <div className="bg-[var(--secondary-system-background)]/80 backdrop-blur-3xl rounded-[32px] overflow-hidden shadow-2xl border border-white/10 mb-4">
-                {/* Handle */}
-                <div className="flex justify-center pt-4 pb-2">
-                  <div className="w-12 h-1.5 bg-white/20 rounded-full" />
+              <div className="bg-[var(--secondary-system-background)]/90 backdrop-blur-3xl rounded-[32px] overflow-hidden shadow-2xl border border-[var(--separator)] mb-4">
+                
+                {/* 1. Hero Section */}
+                <div className="relative w-full h-32 bg-black shrink-0">
+                  <div className="absolute inset-0 overflow-hidden">
+                    <img 
+                      src={profile.avatar} 
+                      alt={profile.name} 
+                      className="w-full h-full object-cover opacity-60 blur-[30px] scale-125"
+                      referrerPolicy="no-referrer"
+                    />
+                  </div>
+                  <div className="absolute inset-0 bg-gradient-to-t from-[var(--secondary-system-background)]/90 via-[var(--secondary-system-background)]/40 to-transparent" />
+                  
+                  {/* Handle */}
+                  <div className="absolute top-4 left-0 right-0 flex justify-center z-10">
+                    <div className="w-12 h-1.5 bg-white/30 rounded-full" />
+                  </div>
+
+                  <div className="absolute -bottom-14 left-6 flex items-end gap-4">
+                    <div className="w-28 h-28 rounded-[24px] overflow-hidden shadow-lg shrink-0 bg-[var(--secondary-system-background)] border border-[var(--separator)]">
+                      <img 
+                        src={profile.avatar} 
+                        alt={profile.name} 
+                        className="w-full h-full object-cover"
+                        referrerPolicy="no-referrer"
+                      />
+                    </div>
+                  </div>
                 </div>
 
-                <div className="px-6 pt-2 pb-6">
-                  {/* Header */}
-                  <div className="flex items-center gap-4 mb-6">
-                    <div className="relative w-12 h-12 rounded-full overflow-hidden border border-white/10 shadow-sm">
-                      <img src={profile.avatar} alt={profile.name} className="w-full h-full object-cover" />
-                    </div>
-                    <div>
-                      <h2 className="text-lg font-bold text-[var(--label)]">{profile.name}</h2>
-                      <p className="text-sm text-[var(--secondary-label)]">Share Profile</p>
-                    </div>
+                {/* 2. Primary Information Section */}
+                <div className="pt-16 px-6 pb-6">
+                  <div className="mb-8">
+                    <h2 className="font-sans text-2xl font-bold leading-tight text-[var(--label)] mb-1">
+                      {profile.name}
+                    </h2>
+                    <p className="font-sans text-base text-[var(--secondary-label)]">
+                      {profile.handle}
+                    </p>
                   </div>
                   
                   {/* Main Actions */}
-                  <div className="grid grid-cols-2 gap-3 mb-8">
+                  <div className="flex gap-3 mb-8">
                     <button
                       onClick={() => {
                         haptics.medium();
                         setShowQRCode(true);
                       }}
-                      className="flex flex-col items-start justify-between p-4 h-28 bg-white/5 border border-white/5 rounded-[24px] hover:bg-white/10 transition-colors group"
+                      className="flex-1 flex items-center justify-center gap-2 py-3.5 bg-[var(--label)] text-[var(--system-background)] rounded-xl font-bold shadow-md active:scale-[0.98] transition-transform"
                     >
-                      <div className="w-10 h-10 flex items-center justify-center rounded-full bg-white/10 text-[var(--label)] group-hover:scale-110 transition-transform shadow-sm">
-                        <QrCode className="w-5 h-5" />
-                      </div>
-                      <span className="text-sm font-semibold text-[var(--label)]">QR Code</span>
+                      <QrCode className="w-5 h-5" />
+                      QR Code
                     </button>
 
                     <button
                       onClick={handleCopy}
-                      className="flex flex-col items-start justify-between p-4 h-28 bg-white/5 border border-white/5 rounded-[24px] hover:bg-white/10 transition-colors group"
+                      className="flex-1 flex items-center justify-center gap-2 py-3.5 bg-[var(--tertiary-system-background)] text-[var(--label)] rounded-xl font-bold shadow-sm border border-[var(--separator)] active:scale-[0.98] transition-transform"
                     >
-                      <div className="w-10 h-10 flex items-center justify-center rounded-full bg-white/10 text-[var(--label)] group-hover:scale-110 transition-transform shadow-sm">
-                        {isCopied ? <Check className="w-5 h-5" /> : <Copy className="w-5 h-5" />}
-                      </div>
-                      <span className="text-sm font-semibold text-[var(--label)]">
-                        {isCopied ? 'Copied!' : 'Copy Link'}
-                      </span>
+                      {isCopied ? <Check className="w-5 h-5" /> : <Copy className="w-5 h-5" />}
+                      {isCopied ? 'Copied!' : 'Copy Link'}
                     </button>
                   </div>
 
                   {/* Socials */}
-                  <div className="space-y-3">
-                    <p className="text-xs font-semibold text-[var(--secondary-label)] uppercase tracking-wider px-1">Share via</p>
-                    <div className="flex gap-3 overflow-x-auto hide-scrollbar py-1 -mx-2 px-2">
+                  <div className="mb-2">
+                    <h3 className="font-sans text-xl font-bold text-[var(--label)] mb-4">Share via</h3>
+                    <div className="horizontal-scroll-container hide-scrollbar -mx-6 px-6 pb-2 flex gap-4">
                       {socialOptions.map((option) => (
-                        <a
-                          key={option.name}
-                          href={option.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          onClick={() => haptics.light()}
-                          className="flex flex-col items-center gap-2 shrink-0 group"
-                        >
-                          <div className={`w-14 h-14 flex items-center justify-center rounded-[20px] ${option.color} text-white shadow-lg group-active:scale-90 transition-all duration-300 group-hover:rounded-[16px]`}>
+                        <div key={option.name} className="flex flex-col items-center w-[72px] shrink-0 gap-2">
+                          <motion.a
+                            href={option.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            whileHover={{ scale: window.matchMedia('(hover: hover)').matches ? 1.1 : 1, y: window.matchMedia('(hover: hover)').matches ? -4 : 0 }}
+                            whileTap={{ scale: 0.95 }}
+                            transition={{ type: "spring", stiffness: 600, damping: 35 }}
+                            onClick={() => haptics.light()}
+                            className={`w-[60px] h-[60px] flex items-center justify-center rounded-full bg-[var(--secondary-system-background)] border border-[var(--separator)] shadow-sm transition-colors duration-300 text-[var(--label)] ${option.hoverClass}`}
+                            aria-label={option.name}
+                          >
                             {option.icon}
-                          </div>
-                          <span className="text-[11px] font-medium text-[var(--secondary-label)]">{option.name}</span>
-                        </a>
+                          </motion.a>
+                          <span className="text-xs font-medium text-[var(--secondary-label)] text-center leading-tight">
+                            {option.name}
+                          </span>
+                        </div>
                       ))}
                     </div>
                   </div>
@@ -161,7 +205,7 @@ export function ShareSheet({ isOpen, onClose, profile }: ShareSheetProps) {
               {/* Cancel Button */}
               <button 
                 onClick={onClose}
-                className="w-full py-4 mb-4 bg-[var(--secondary-system-background)]/80 backdrop-blur-3xl border border-white/10 rounded-[24px] text-[var(--label)] text-lg font-semibold shadow-xl active:scale-[0.98] transition-transform"
+                className="w-full py-4 mb-4 bg-[var(--secondary-system-background)]/90 backdrop-blur-3xl border border-[var(--separator)] rounded-[24px] text-[var(--label)] text-lg font-semibold shadow-xl active:scale-[0.98] transition-transform"
               >
                 Cancel
               </button>
@@ -210,28 +254,29 @@ export function ShareSheet({ isOpen, onClose, profile }: ShareSheetProps) {
               </div>
 
               <div className="p-6 bg-white rounded-[32px] shadow-inner mb-8">
-                <QRCodeSVG 
+                <QRCodeCanvas 
+                  ref={qrRef}
                   value={shareUrl}
                   size={200}
                   level="H"
                   includeMargin={false}
-                  imageSettings={profile.avatar ? {
-                    src: profile.avatar,
+                  imageSettings={{
+                    src: '/qr-logo.png',
                     x: undefined,
                     y: undefined,
-                    height: 40,
-                    width: 40,
+                    height: 48,
+                    width: 48,
                     excavate: true,
-                  } : undefined}
+                  }}
                 />
               </div>
 
               <button
-                onClick={handleCopy}
+                onClick={handleDownloadQR}
                 className="w-full flex items-center justify-center gap-2 py-4 bg-[var(--label)] text-[var(--system-background)] rounded-2xl font-bold shadow-lg active:scale-[0.98] transition-transform"
               >
-                {isCopied ? <Check className="w-5 h-5" /> : <LinkIcon className="w-5 h-5" />}
-                {isCopied ? 'Copied!' : 'Copy Profile Link'}
+                <Download className="w-5 h-5" />
+                Download QR Code
               </button>
             </motion.div>
           </motion.div>
