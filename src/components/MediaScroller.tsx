@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ChevronRight, GripHorizontal, Plus, Play, Pause, ListPlus } from 'lucide-react';
 import { MediaDetailsModal } from './MediaDetailsModal';
