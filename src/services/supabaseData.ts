@@ -38,11 +38,39 @@ export async function getUserByHandle(handle: string) {
   }
 }
 
+export async function upsertUserSocials(socials: any[]) {
+  try {
+    const { data, error } = await supabase
+      .from('user_socials')
+      .upsert(socials, { onConflict: 'id' })
+      .select();
+
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error('Error upserting user socials:', error);
+    throw error;
+  }
+}
+
+export async function deleteUserSocial(id: string) {
+  try {
+    const { error } = await supabase
+      .from('user_socials')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
+  } catch (error) {
+    console.error('Error deleting user social:', error);
+    throw error;
+  }
+}
 export async function getUserProfile(userId: string) {
   try {
     const [userResponse, socialsResponse] = await Promise.all([
       supabase.from('users').select('*').eq('id', userId).single(),
-      supabase.from('user_socials').select('*').eq('user_id', userId)
+      supabase.from('user_socials').select('*').eq('user_id', userId).order('position', { ascending: true })
     ]);
 
     if (userResponse.error) throw userResponse.error;
@@ -141,6 +169,34 @@ export async function updateShelfOrder(userId: string, shelfIds: string[]) {
   } catch (error) {
     console.error('Error updating shelf order:', error);
     throw error;
+  }
+}
+
+export async function getUserMediaInteraction(userId: string, externalId: string, mediaType: string) {
+  try {
+    const { data, error } = await supabase
+      .from('diary_entries')
+      .select(`
+        rating,
+        logged_date,
+        media_items!inner (
+          external_id,
+          media_type
+        )
+      `)
+      .eq('user_id', userId)
+      .eq('media_items.external_id', externalId)
+      .eq('media_items.media_type', mediaType)
+      .order('logged_date', { ascending: false })
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error('Error fetching user media interaction:', error);
+    return null;
   }
 }
 

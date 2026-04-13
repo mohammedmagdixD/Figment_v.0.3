@@ -31,10 +31,11 @@ interface ErrorBoundaryState {
   error: Error | null;
 }
 
-class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
+class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
+  state: ErrorBoundaryState = { hasError: false, error: null };
+
   constructor(props: ErrorBoundaryProps) {
     super(props);
-    this.state = { hasError: false, error: null };
   }
 
   static getDerivedStateFromError(error: Error): ErrorBoundaryState {
@@ -72,7 +73,7 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
   }
 }
 
-function DraggableSection({ section, isFirstSection, onAddClick, onLogEpisode, albums, onAddToAlbum, onCreateAlbum }: { section: any, isFirstSection?: boolean, onAddClick?: () => void, onLogEpisode?: any, albums?: Album[], onAddToAlbum?: any, onCreateAlbum?: any }) {
+const DraggableSection: React.FC<{ section: any, isFirstSection?: boolean, onAddClick?: () => void, onLogEpisode?: any, albums?: Album[], onAddToAlbum?: any, onCreateAlbum?: any, viewingUserId?: string }> = ({ section, isFirstSection, onAddClick, onLogEpisode, albums, onAddToAlbum, onCreateAlbum, viewingUserId }) => {
   const controls = useDragControls();
   return (
     <Reorder.Item 
@@ -90,6 +91,7 @@ function DraggableSection({ section, isFirstSection, onAddClick, onLogEpisode, a
         albums={albums}
         onAddToAlbum={onAddToAlbum}
         onCreateAlbum={onCreateAlbum}
+        viewingUserId={viewingUserId}
       />
     </Reorder.Item>
   );
@@ -193,9 +195,11 @@ export default function App() {
           bio: userProfile.bio || '',
           avatar: userProfile.avatar_url || userProfile.avatar || getFallbackAvatar(profileName),
           socials: userProfile.socials?.map((s: any) => ({
+            id: s.id,
+            user_id: s.user_id,
             platform: s.platform,
             url: s.url,
-            icon: s.platform.toLowerCase()
+            position: s.position
           })) || []
         });
 
@@ -331,7 +335,13 @@ export default function App() {
           
           <div className="flex-1 overflow-hidden relative flex flex-col pt-safe-top">
             <main className={`flex-1 overflow-y-auto hide-scrollbar scroll-container pb-28 space-y-2 ${renderedTab === 'profile' ? 'block' : 'hidden'}`}>
-              <Header profile={profile} isOwnProfile={isOwnProfile} onRecommendClick={() => setIsRecommendModalOpen(true)} onAuthClick={() => setIsAuthModalOpen(true)} />
+              <Header 
+                profile={profile} 
+                isOwnProfile={isOwnProfile} 
+                onRecommendClick={() => setIsRecommendModalOpen(true)} 
+                onAuthClick={() => setIsAuthModalOpen(true)} 
+                onSocialsChange={(newSocials) => setProfile(prev => prev ? { ...prev, socials: newSocials } : null)}
+              />
               <div className="w-full h-[0.5px] bg-[var(--separator)] my-4" />
               
               {sections.filter(s => s.items && s.items.length > 0).length > 0 ? (
@@ -354,6 +364,7 @@ export default function App() {
                         albums={albums}
                         onAddToAlbum={handleAddToAlbum}
                         onCreateAlbum={handleCreateAlbum}
+                        viewingUserId={viewingUserId}
                       />
                     ))}
                   </Reorder.Group>
@@ -369,6 +380,7 @@ export default function App() {
                           albums={albums}
                           onAddToAlbum={undefined}
                           onCreateAlbum={undefined}
+                          viewingUserId={viewingUserId}
                         />
                       </div>
                     ))}

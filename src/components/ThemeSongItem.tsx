@@ -7,7 +7,7 @@ interface ThemeSongItemProps {
   themeString: string;
 }
 
-export function ThemeSongItem({ themeString }: ThemeSongItemProps) {
+export const ThemeSongItem: React.FC<ThemeSongItemProps> = ({ themeString }) => {
   const [songData, setSongData] = useState<any>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(true);

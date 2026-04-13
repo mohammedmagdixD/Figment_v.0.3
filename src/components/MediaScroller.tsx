@@ -15,9 +15,10 @@ interface MediaScrollerProps {
   albums?: Album[];
   onAddToAlbum?: (albumId: string, item: any) => void;
   onCreateAlbum?: (title: string, description: string, coverImage: string, firstItem: any) => void;
+  viewingUserId?: string;
 }
 
-export function MediaScroller({ section, dragControls, isFirstSection = false, onAddClick, onLogEpisode, albums = [], onAddToAlbum, onCreateAlbum }: MediaScrollerProps) {
+export function MediaScroller({ section, dragControls, isFirstSection = false, onAddClick, onLogEpisode, albums = [], onAddToAlbum, onCreateAlbum, viewingUserId }: MediaScrollerProps) {
   const [playingId, setPlayingId] = useState<string | null>(null);
   const [selectedItem, setSelectedItem] = useState<any | null>(null);
   const [addingToAlbumItem, setAddingToAlbumItem] = useState<any | null>(null);
@@ -131,6 +132,7 @@ export function MediaScroller({ section, dragControls, isFirstSection = false, o
             item={{...selectedItem, type: section.type}} 
             onClose={() => setSelectedItem(null)} 
             onLogEpisode={onLogEpisode ? ((episode, rating, date, liked, rewatched) => onLogEpisode(episode, rating, date, liked, rewatched, selectedItem)) : undefined}
+            viewingUserId={viewingUserId}
           />
         )}
         {addingToAlbumItem && onAddToAlbum && onCreateAlbum && (

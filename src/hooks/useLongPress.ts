@@ -1,4 +1,4 @@
-import { useCallback, useRef } from 'react';
+import React, { useCallback, useRef } from 'react';
 
 interface UseLongPressOptions {
   onLongPress: () => void;

@@ -13,9 +13,10 @@ import { useScrollLock } from '../hooks/useScrollLock';
 
 interface UniversalDetailCardProps {
   data: UniversalMediaData;
+  viewingUserId?: string;
 }
 
-export function UniversalDetailCard({ data }: UniversalDetailCardProps) {
+export function UniversalDetailCard({ data, viewingUserId }: UniversalDetailCardProps) {
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
   const [playingId, setPlayingId] = useState<string | null>(null);
   const [selectedItem, setSelectedItem] = useState<any | null>(null);
@@ -450,6 +451,7 @@ export function UniversalDetailCard({ data }: UniversalDetailCardProps) {
             type: selectedItem.mediaType
           }}
           onClose={() => setSelectedItem(null)}
+          viewingUserId={viewingUserId}
         />
       )}
 

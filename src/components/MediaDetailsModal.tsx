@@ -17,6 +17,8 @@ import {
   genericAdapter 
 } from '../utils/adapters';
 import { UniversalMediaData } from '../types/universal';
+import { useAuth } from '../contexts/AuthContext';
+import { getUserMediaInteraction } from '../services/supabaseData';
 
 interface MediaDetailsModalProps {
   item: SearchResult & { rating?: number; dateAdded?: string; type?: string } | null;
@@ -24,9 +26,10 @@ interface MediaDetailsModalProps {
   onLogEpisode?: (episode: PodcastEpisode, rating: number, date: string, liked: boolean, rewatched: boolean) => void;
   fullScreen?: boolean;
   onRateClick?: () => void;
+  viewingUserId?: string;
 }
 
-export function MediaDetailsModal({ item, onClose, onLogEpisode, fullScreen, onRateClick }: MediaDetailsModalProps) {
+export function MediaDetailsModal({ item, onClose, onLogEpisode, fullScreen, onRateClick, viewingUserId }: MediaDetailsModalProps) {
   useScrollLock(!!item);
 
   const [mediaDetails, setMediaDetails] = useState<any | null>(null);
@@ -41,6 +44,32 @@ export function MediaDetailsModal({ item, onClose, onLogEpisode, fullScreen, onR
   const [sheetState, setSheetState] = useState<'half' | 'full'>('half');
   const controls = useAnimation();
   const dragControls = useDragControls();
+
+  const { user } = useAuth();
+  const [userStats, setUserStats] = useState<{ rating?: number; dateAdded?: string } | null>(null);
+
+  useEffect(() => {
+    if (item?.rating !== undefined || item?.dateAdded) {
+      setUserStats({ rating: item.rating, dateAdded: item.dateAdded });
+    } else {
+      setUserStats(null);
+    }
+  }, [item]);
+
+  useEffect(() => {
+    async function fetchUserStats() {
+      const targetUserId = viewingUserId || user?.id;
+      if (!targetUserId || !item) return;
+      const stats = await getUserMediaInteraction(targetUserId, item.id, item.type || 'unknown');
+      if (stats) {
+        setUserStats({
+          rating: stats.rating,
+          dateAdded: stats.logged_date
+        });
+      }
+    }
+    fetchUserStats();
+  }, [user, item, viewingUserId]);
 
   useEffect(() => {
     if (item) {
@@ -212,10 +241,10 @@ export function MediaDetailsModal({ item, onClose, onLogEpisode, fullScreen, onR
     }
 
     // Add user stats if available
-    if (item.rating !== undefined || item.dateAdded) {
+    if (userStats) {
       normalizedData.userStats = {
-        rating: item.rating,
-        dateAdded: item.dateAdded
+        rating: userStats.rating,
+        dateAdded: userStats.dateAdded
       };
     }
 
@@ -239,7 +268,7 @@ export function MediaDetailsModal({ item, onClose, onLogEpisode, fullScreen, onR
             )}
           </div>
         )}
-        <UniversalDetailCard data={normalizedData} />
+        <UniversalDetailCard data={normalizedData} viewingUserId={viewingUserId} />
       </div>
     );
   };

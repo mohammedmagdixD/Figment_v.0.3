@@ -20,15 +20,15 @@ const MEDIA_TYPES: { id: MediaType; label: string; icon: React.ReactNode }[] = [
   { id: 'webnovel', label: 'Webnovels', icon: <Book className="w-4 h-4" /> },
 ];
 
-function HistoryItem({ 
-  item, 
-  onLongPress, 
-  onClick 
-}: { 
+const HistoryItem: React.FC<{ 
   item: any; 
   onLongPress: () => void; 
   onClick: () => void; 
-}) {
+}> = ({ 
+  item, 
+  onLongPress, 
+  onClick 
+}) => {
   const longPressProps = useLongPress({
     onLongPress
   });

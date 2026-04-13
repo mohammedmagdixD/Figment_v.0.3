@@ -13,7 +13,7 @@ interface UniversalListItemProps {
   rightContent?: React.ReactNode;
 }
 
-export function UniversalListItem({ 
+export const UniversalListItem: React.FC<UniversalListItemProps> = ({ 
   title, 
   subtitle, 
   imageUrl, 
@@ -22,7 +22,7 @@ export function UniversalListItem({
   onClick,
   actionButton,
   rightContent
-}: UniversalListItemProps) {
+}) => {
   const [isLoaded, setIsLoaded] = useState(false);
   
   const renderIcon = () => {

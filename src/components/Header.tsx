@@ -1,39 +1,25 @@
-import { Twitter, Instagram, Github, Link as LinkIcon, Share, MoreHorizontal, Sparkles, LogIn, LogOut } from 'lucide-react';
+import { Link as LinkIcon, Share, MoreHorizontal, Sparkles, LogIn, LogOut } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { haptics } from '../utils/haptics';
 import { useAuth } from '../contexts/AuthContext';
 import { useState } from 'react';
 import { ShareSheet } from './ShareSheet';
+import { ProfileHeaderSocials } from './ProfileHeaderSocials';
+import { ManageLinksScreen } from './ManageLinksScreen';
 
 interface HeaderProps {
   profile: any;
   isOwnProfile?: boolean;
   onRecommendClick?: () => void;
   onAuthClick?: () => void;
+  onSocialsChange?: (socials: any[]) => void;
 }
 
-export function Header({ profile, isOwnProfile = true, onRecommendClick, onAuthClick }: HeaderProps) {
+export function Header({ profile, isOwnProfile = true, onRecommendClick, onAuthClick, onSocialsChange }: HeaderProps) {
   const { user, signOut } = useAuth();
   const [isActionSheetOpen, setIsActionSheetOpen] = useState(false);
   const [isShareSheetOpen, setIsShareSheetOpen] = useState(false);
-
-  const getIcon = (iconName: string) => {
-    switch (iconName) {
-      case 'twitter': return <Twitter className="w-5 h-5" />;
-      case 'instagram': return <Instagram className="w-5 h-5" />;
-      case 'github': return <Github className="w-5 h-5" />;
-      default: return <LinkIcon className="w-5 h-5" />;
-    }
-  };
-
-  const getHoverClass = (iconName: string) => {
-    switch (iconName) {
-      case 'twitter': return 'hover:bg-quiet-sky hover:border-quiet-sky hover:shadow-[0_0_15px_rgba(196,227,243,0.5)] text-[var(--label)]';
-      case 'instagram': return 'hover:bg-cherry-blossom hover:border-cherry-blossom hover:shadow-[0_0_15px_rgba(244,200,221,0.5)] text-[var(--label)]';
-      case 'github': return 'hover:bg-whispering-leaf hover:border-whispering-leaf hover:shadow-[0_0_15px_rgba(209,234,205,0.5)] text-[var(--label)]';
-      default: return 'hover:bg-morning-haze hover:border-morning-haze hover:shadow-[0_0_15px_rgba(253,236,201,0.5)] text-[var(--label)]';
-    }
-  };
+  const [isManageLinksOpen, setIsManageLinksOpen] = useState(false);
 
   const handleShare = () => {
     haptics.light();
@@ -144,20 +130,7 @@ export function Header({ profile, isOwnProfile = true, onRecommendClick, onAuthC
             transition={{ delay: 0.25 }}
             className="flex gap-3 mt-7"
           >
-            {profile.socials.map((social: any, index: number) => (
-              <motion.a 
-                key={index}
-                href={social.url}
-                whileHover={{ scale: window.matchMedia('(hover: hover)').matches ? 1.1 : 1, y: window.matchMedia('(hover: hover)').matches ? -4 : 0 }}
-                whileTap={{ scale: 0.95 }}
-                transition={{ type: "spring", stiffness: 600, damping: 35 }}
-                onClick={() => haptics.light()}
-                className={`w-12 h-12 flex items-center justify-center rounded-full bg-[var(--secondary-system-background)]/70 backdrop-blur-sm border border-[var(--separator)] shadow-sm transition-colors duration-300 ${getHoverClass(social.icon)}`}
-                aria-label={social.platform}
-              >
-                {getIcon(social.icon)}
-              </motion.a>
-            ))}
+            <ProfileHeaderSocials socials={profile.socials} />
           </motion.div>
 
           {!isOwnProfile && (
@@ -201,7 +174,14 @@ export function Header({ profile, isOwnProfile = true, onRecommendClick, onAuthC
                 <button className="w-full py-4 text-[var(--label)] text-lg font-medium border-b border-[var(--separator)] hover:bg-[var(--tertiary-system-background)] transition-colors">
                   Connections
                 </button>
-                <button className="w-full py-4 text-[var(--label)] text-lg font-medium border-b border-[var(--separator)] hover:bg-[var(--tertiary-system-background)] transition-colors">
+                <button 
+                  onClick={() => {
+                    haptics.medium();
+                    setIsActionSheetOpen(false);
+                    setIsManageLinksOpen(true);
+                  }}
+                  className="w-full py-4 text-[var(--label)] text-lg font-medium border-b border-[var(--separator)] hover:bg-[var(--tertiary-system-background)] transition-colors"
+                >
                   Links
                 </button>
                 <button className="w-full py-4 text-[var(--label)] text-lg font-medium border-b border-[var(--separator)] hover:bg-[var(--tertiary-system-background)] transition-colors">
@@ -240,6 +220,14 @@ export function Header({ profile, isOwnProfile = true, onRecommendClick, onAuthC
           handle: profile.handle,
           avatar: profile.avatar
         }}
+      />
+
+      <ManageLinksScreen
+        isOpen={isManageLinksOpen}
+        onClose={() => setIsManageLinksOpen(false)}
+        socials={profile.socials}
+        onSocialsChange={onSocialsChange || (() => {})}
+        userId={user?.id || ''}
       />
     </>
   );
