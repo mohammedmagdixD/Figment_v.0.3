@@ -1,8 +1,8 @@
+import React, { useState } from 'react';
 import { Link as LinkIcon, Share, MoreHorizontal, Sparkles, LogIn, LogOut } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { haptics } from '../utils/haptics';
 import { useAuth } from '../contexts/AuthContext';
-import { useState } from 'react';
 import { ShareSheet } from './ShareSheet';
 import { ProfileHeaderSocials } from './ProfileHeaderSocials';
 import { ManageLinksScreen } from './ManageLinksScreen';
@@ -15,7 +15,7 @@ interface HeaderProps {
   onSocialsChange?: (socials: any[]) => void;
 }
 
-export function Header({ profile, isOwnProfile = true, onRecommendClick, onAuthClick, onSocialsChange }: HeaderProps) {
+export const Header = React.memo(function Header({ profile, isOwnProfile = true, onRecommendClick, onAuthClick, onSocialsChange }: HeaderProps) {
   const { user, signOut } = useAuth();
   const [isActionSheetOpen, setIsActionSheetOpen] = useState(false);
   const [isShareSheetOpen, setIsShareSheetOpen] = useState(false);
@@ -231,4 +231,4 @@ export function Header({ profile, isOwnProfile = true, onRecommendClick, onAuthC
       />
     </>
   );
-}
+});

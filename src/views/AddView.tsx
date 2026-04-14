@@ -52,7 +52,7 @@ const HistoryItem: React.FC<{
   );
 }
 
-export function AddView({ onAddItem, initialType }: { onAddItem: (item: SearchResult, details: { rating: number, date: string, liked: boolean, rewatched: boolean }) => void, initialType?: MediaType }) {
+export const AddView = React.memo(function AddView({ onAddItem, initialType }: { onAddItem: (item: SearchResult, details: { rating: number, date: string, liked: boolean, rewatched: boolean }) => void, initialType?: MediaType }) {
   const [isFocused, setIsFocused] = useState(false);
   const [query, setQuery] = useState('');
   const [activeType, setActiveType] = useState<MediaType>(initialType || 'movie');
@@ -317,4 +317,4 @@ export function AddView({ onAddItem, initialType }: { onAddItem: (item: SearchRe
       />
     </div>
   );
-}
+});

@@ -1,7 +1,7 @@
 import React, { useRef } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
 
-export function FeedView() {
+export const FeedView = React.memo(function FeedView() {
   const parentRef = useRef<HTMLDivElement>(null);
   const items: any[] = []; // Placeholder for future feed items
 
@@ -56,4 +56,4 @@ export function FeedView() {
       </div>
     </div>
   );
-}
+});

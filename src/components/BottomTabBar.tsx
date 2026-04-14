@@ -1,3 +1,4 @@
+import React from 'react';
 import { motion } from 'motion/react';
 import { User, Book, Plus, LayoutGrid, Sparkles } from 'lucide-react';
 import { haptics } from '../utils/haptics';
@@ -17,7 +18,7 @@ const tabs = [
   { id: 'profile', icon: User, label: 'Profile', width: 105 },
 ] as const;
 
-export function BottomTabBar({ activeTab, onTabChange }: BottomTabBarProps) {
+export const BottomTabBar = React.memo(function BottomTabBar({ activeTab, onTabChange }: BottomTabBarProps) {
   const handleTabChange = (tab: TabType) => {
     if (activeTab !== tab) {
       if (tab === 'add') {
@@ -103,4 +104,4 @@ export function BottomTabBar({ activeTab, onTabChange }: BottomTabBarProps) {
       </motion.div>
     </div>
   );
-}
+});

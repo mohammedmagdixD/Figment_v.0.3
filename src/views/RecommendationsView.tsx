@@ -82,7 +82,7 @@ const ExpandableMessage = ({ text }: { text: string }) => {
   );
 };
 
-export function RecommendationsView({ viewingUserId }: { viewingUserId?: string }) {
+export const RecommendationsView = React.memo(function RecommendationsView({ viewingUserId }: { viewingUserId?: string }) {
   const { user } = useAuth();
   const [recommendations, setRecommendations] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -276,4 +276,4 @@ export function RecommendationsView({ viewingUserId }: { viewingUserId?: string 
       />
     </div>
   );
-}
+});

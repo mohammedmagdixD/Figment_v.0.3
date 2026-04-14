@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ChevronRight, GripHorizontal, Plus, Play, Pause, ListPlus } from 'lucide-react';
 import { MediaDetailsModal } from './MediaDetailsModal';
@@ -18,7 +18,7 @@ interface MediaScrollerProps {
   viewingUserId?: string;
 }
 
-export function MediaScroller({ section, dragControls, isFirstSection = false, onAddClick, onLogEpisode, albums = [], onAddToAlbum, onCreateAlbum, viewingUserId }: MediaScrollerProps) {
+export const MediaScroller = React.memo(function MediaScroller({ section, dragControls, isFirstSection = false, onAddClick, onLogEpisode, albums = [], onAddToAlbum, onCreateAlbum, viewingUserId }: MediaScrollerProps) {
   const [playingId, setPlayingId] = useState<string | null>(null);
   const [selectedItem, setSelectedItem] = useState<any | null>(null);
   const [addingToAlbumItem, setAddingToAlbumItem] = useState<any | null>(null);
@@ -147,4 +147,4 @@ export function MediaScroller({ section, dragControls, isFirstSection = false, o
       </AnimatePresence>
     </section>
   );
-}
+});

@@ -1,7 +1,7 @@
 import { motion, AnimatePresence } from 'motion/react';
 import { Play, Star, ExternalLink, Headphones, BookOpen, Calendar, ChevronDown, ChevronUp, Loader2 } from 'lucide-react';
 import { UniversalMediaData } from '../types/universal';
-import { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { MediaCard } from './MediaCard';
 import { MediaDetailsModal } from './MediaDetailsModal';
 import { SpotifyIcon, AppleMusicIcon, YouTubeMusicIcon, TidalIcon, DeezerIcon, SoundCloudIcon } from './StreamingIcons';
@@ -16,7 +16,7 @@ interface UniversalDetailCardProps {
   viewingUserId?: string;
 }
 
-export function UniversalDetailCard({ data, viewingUserId }: UniversalDetailCardProps) {
+export const UniversalDetailCard = React.memo(function UniversalDetailCard({ data, viewingUserId }: UniversalDetailCardProps) {
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
   const [playingId, setPlayingId] = useState<string | null>(null);
   const [selectedItem, setSelectedItem] = useState<any | null>(null);
@@ -528,4 +528,4 @@ export function UniversalDetailCard({ data, viewingUserId }: UniversalDetailCard
       </AnimatePresence>
     </div>
   );
-}
+});

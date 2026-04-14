@@ -3,12 +3,12 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, Component, ErrorInfo, ReactNode, useEffect } from 'react';
+import React, { useState, Component, ErrorInfo, ReactNode, useEffect, Suspense, lazy } from 'react';
 import { Header } from './components/Header';
 import { MediaScroller } from './components/MediaScroller';
 import { RecommendationModal } from './components/RecommendationModal';
 import { AuthScreen } from './components/AuthScreen';
-import { DiaryView, DiaryEntry } from './components/DiaryView';
+import { DiaryEntry } from './components/DiaryView';
 import { Reorder, useDragControls, AnimatePresence } from 'motion/react';
 import { SearchResult, MediaType, Album } from './services/api';
 import { AlertTriangle, Loader2, ListPlus } from 'lucide-react';
@@ -16,11 +16,13 @@ import { useAuth } from './contexts/AuthContext';
 import { getUserProfile, logMediaItem, addSectionItem, syncMediaToShelf, getUserByHandle, sendRecommendation } from './services/supabaseData';
 import { useDiary } from './hooks/useDiary';
 import { useShelves } from './hooks/useShelves';
-import { FeedView } from './views/FeedView';
-import { RecommendationsView } from './views/RecommendationsView';
-import { AddView } from './views/AddView';
 
 import { BottomTabBar, TabType } from './components/BottomTabBar';
+
+const FeedView = lazy(() => import('./views/FeedView').then(module => ({ default: module.FeedView })));
+const RecommendationsView = lazy(() => import('./views/RecommendationsView').then(module => ({ default: module.RecommendationsView })));
+const AddView = lazy(() => import('./views/AddView').then(module => ({ default: module.AddView })));
+const DiaryView = lazy(() => import('./components/DiaryView').then(module => ({ default: module.DiaryView })));
 
 interface ErrorBoundaryProps {
   children: ReactNode;
@@ -73,7 +75,7 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
   }
 }
 
-const DraggableSection: React.FC<{ section: any, isFirstSection?: boolean, onAddClick?: () => void, onLogEpisode?: any, albums?: Album[], onAddToAlbum?: any, onCreateAlbum?: any, viewingUserId?: string }> = ({ section, isFirstSection, onAddClick, onLogEpisode, albums, onAddToAlbum, onCreateAlbum, viewingUserId }) => {
+const DraggableSection = React.memo(({ section, isFirstSection, onAddClick, onLogEpisode, albums, onAddToAlbum, onCreateAlbum, viewingUserId }: { section: any, isFirstSection?: boolean, onAddClick?: (section: any) => void, onLogEpisode?: any, albums?: Album[], onAddToAlbum?: any, onCreateAlbum?: any, viewingUserId?: string }) => {
   const controls = useDragControls();
   return (
     <Reorder.Item 
@@ -86,7 +88,7 @@ const DraggableSection: React.FC<{ section: any, isFirstSection?: boolean, onAdd
         section={section} 
         dragControls={controls} 
         isFirstSection={isFirstSection}
-        onAddClick={onAddClick} 
+        onAddClick={() => onAddClick?.(section)} 
         onLogEpisode={onLogEpisode}
         albums={albums}
         onAddToAlbum={onAddToAlbum}
@@ -95,7 +97,7 @@ const DraggableSection: React.FC<{ section: any, isFirstSection?: boolean, onAdd
       />
     </Reorder.Item>
   );
-}
+});
 
 export default function App() {
   const { user, isLoading } = useAuth();
@@ -220,7 +222,7 @@ export default function App() {
     return () => window.removeEventListener('popstate', handlePopState);
   }, [user]);
 
-  const handleCreateAlbum = (title: string, description: string, coverImage: string, firstItem: any) => {
+  const handleCreateAlbum = React.useCallback((title: string, description: string, coverImage: string, firstItem: any) => {
     const newAlbum: Album = {
       id: `album_${Date.now()}`,
       title,
@@ -229,9 +231,9 @@ export default function App() {
       tracks: [firstItem]
     };
     setAlbums(prev => [newAlbum, ...prev]);
-  };
+  }, []);
 
-  const handleAddToAlbum = (albumId: string, item: any) => {
+  const handleAddToAlbum = React.useCallback((albumId: string, item: any) => {
     setAlbums(prev => prev.map(album => {
       if (album.id === albumId) {
         if (album.tracks.some(t => t.id === item.id)) return album;
@@ -239,15 +241,15 @@ export default function App() {
       }
       return album;
     }));
-  };
+  }, []);
 
-  const handleAddClick = (section: any) => {
+  const handleAddClick = React.useCallback((section: any) => {
     setActiveSection({ id: section.id, type: section.type as MediaType, title: section.title });
     setActiveTab('add');
     window.history.pushState({}, '', '/add');
-  };
+  }, []);
 
-  const handleAddItem = async (item: SearchResult, details: { rating: number, date: string, liked: boolean, rewatched: boolean }) => {
+  const handleAddItem = React.useCallback(async (item: SearchResult, details: { rating: number, date: string, liked: boolean, rewatched: boolean }) => {
     if (!user) return;
     try {
       const mediaItemToLog = { ...item, type: item.type || activeSection?.type || 'movie' };
@@ -273,9 +275,9 @@ export default function App() {
     } catch (error) {
       console.error('Failed to log media:', error);
     }
-  };
+  }, [user, activeSection, refetchDiary, refetchShelves]);
 
-  const handleLogEpisode = async (episode: any, rating: number, date: string, liked: boolean, rewatched: boolean, podcast: any) => {
+  const handleLogEpisode = React.useCallback(async (episode: any, rating: number, date: string, liked: boolean, rewatched: boolean, podcast: any) => {
     if (!user) return;
     try {
       const mediaItemToLog = {
@@ -299,9 +301,9 @@ export default function App() {
     } catch (error) {
       console.error('Failed to log episode:', error);
     }
-  };
+  }, [user, refetchDiary, refetchShelves]);
 
-  const handleRecommendSubmit = async (recommendation: any) => {
+  const handleRecommendSubmit = React.useCallback(async (recommendation: any) => {
     if (!viewingUserId) return;
     try {
       await sendRecommendation(
@@ -316,7 +318,38 @@ export default function App() {
     } catch (error) {
       console.error('Failed to send recommendation:', error);
     }
-  };
+  }, [viewingUserId, user]);
+
+  const handleRecommendClick = React.useCallback(() => setIsRecommendModalOpen(true), []);
+  const handleAuthClick = React.useCallback(() => setIsAuthModalOpen(true), []);
+  const handleSocialsChange = React.useCallback((newSocials: any) => setProfile(prev => prev ? { ...prev, socials: newSocials } : null), []);
+
+  const handleTabChange = React.useCallback((tab: 'profile' | 'diary' | 'feed' | 'recommendations' | 'add') => {
+    if (tab === 'add' && !isOwnProfile) {
+      // If viewing someone else's profile, switch to own profile before adding
+      if (user) {
+        setViewingUserId(user.id);
+        setActiveTab('add');
+        startTransition(() => setRenderedTab('add'));
+        window.history.pushState({}, '', '/add');
+      } else {
+        setIsAuthModalOpen(true);
+      }
+      return;
+    }
+
+    if (tab === 'add' && activeTab !== 'add') {
+      setActiveSection(null);
+    }
+    setActiveTab(tab);
+    startTransition(() => setRenderedTab(tab));
+    
+    let newPath = `/${tab}`;
+    if (tab === 'profile') {
+      newPath = profile.handle ? `/@${profile.handle.replace('@', '')}` : '/profile';
+    }
+    window.history.pushState({}, '', newPath);
+  }, [isOwnProfile, user, viewingUserId, activeTab, profile.handle]);
 
   if (isLoading || isDataLoading) {
     return (
@@ -338,9 +371,9 @@ export default function App() {
               <Header 
                 profile={profile} 
                 isOwnProfile={isOwnProfile} 
-                onRecommendClick={() => setIsRecommendModalOpen(true)} 
-                onAuthClick={() => setIsAuthModalOpen(true)} 
-                onSocialsChange={(newSocials) => setProfile(prev => prev ? { ...prev, socials: newSocials } : null)}
+                onRecommendClick={handleRecommendClick} 
+                onAuthClick={handleAuthClick} 
+                onSocialsChange={handleSocialsChange}
               />
               <div className="w-full h-[0.5px] bg-[var(--separator)] my-4" />
               
@@ -359,7 +392,7 @@ export default function App() {
                       <DraggableSection 
                         key={section.id} 
                         section={section} 
-                        onAddClick={() => handleAddClick(section)}
+                        onAddClick={handleAddClick}
                         onLogEpisode={handleLogEpisode}
                         albums={albums}
                         onAddToAlbum={handleAddToAlbum}
@@ -444,50 +477,33 @@ export default function App() {
               <div className="px-4 pt-4 pb-2 shrink-0">
                 <h2 className="font-serif text-2xl font-semibold text-[var(--label)]">Diary</h2>
               </div>
-              <DiaryView entries={diary} />
+              <Suspense fallback={<div className="flex-1 flex items-center justify-center"><Loader2 className="w-8 h-8 text-[var(--secondary-label)] animate-spin" /></div>}>
+                <DiaryView entries={diary} />
+              </Suspense>
             </main>
 
             <main className={`flex-1 overflow-hidden hide-scrollbar flex flex-col ${renderedTab === 'feed' ? 'flex' : 'hidden'}`}>
-              <FeedView />
+              <Suspense fallback={<div className="flex-1 flex items-center justify-center"><Loader2 className="w-8 h-8 text-[var(--secondary-label)] animate-spin" /></div>}>
+                <FeedView />
+              </Suspense>
             </main>
 
             <main className={`flex-1 overflow-y-auto hide-scrollbar scroll-container pb-28 flex flex-col ${renderedTab === 'recommendations' ? 'flex' : 'hidden'}`}>
-              <RecommendationsView viewingUserId={viewingUserId} />
+              <Suspense fallback={<div className="flex-1 flex items-center justify-center"><Loader2 className="w-8 h-8 text-[var(--secondary-label)] animate-spin" /></div>}>
+                <RecommendationsView viewingUserId={viewingUserId} />
+              </Suspense>
             </main>
 
             <main className={`flex-1 overflow-y-auto hide-scrollbar scroll-container flex flex-col ${renderedTab === 'add' ? 'flex' : 'hidden'}`}>
-              <AddView onAddItem={handleAddItem} initialType={activeSection?.type} />
+              <Suspense fallback={<div className="flex-1 flex items-center justify-center"><Loader2 className="w-8 h-8 text-[var(--secondary-label)] animate-spin" /></div>}>
+                <AddView onAddItem={handleAddItem} initialType={activeSection?.type} />
+              </Suspense>
             </main>
           </div>
           
           <BottomTabBar 
             activeTab={activeTab} 
-            onTabChange={(tab) => {
-              if (tab === 'add' && !isOwnProfile) {
-                // If viewing someone else's profile, switch to own profile before adding
-                if (user) {
-                  setViewingUserId(user.id);
-                  setActiveTab('add');
-                  startTransition(() => setRenderedTab('add'));
-                  window.history.pushState({}, '', '/add');
-                } else {
-                  setIsAuthModalOpen(true);
-                }
-                return;
-              }
-
-              if (tab === 'add' && activeTab !== 'add') {
-                setActiveSection(null);
-              }
-              setActiveTab(tab);
-              startTransition(() => setRenderedTab(tab));
-              
-              let newPath = `/${tab}`;
-              if (tab === 'profile') {
-                newPath = profile.handle ? `/@${profile.handle.replace('@', '')}` : '/profile';
-              }
-              window.history.pushState({}, '', newPath);
-            }} 
+            onTabChange={handleTabChange} 
           />
           
           {/* iOS Home Indicator (simulated for desktop view) */}

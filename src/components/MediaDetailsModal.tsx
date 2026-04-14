@@ -29,7 +29,7 @@ interface MediaDetailsModalProps {
   viewingUserId?: string;
 }
 
-export function MediaDetailsModal({ item, onClose, onLogEpisode, fullScreen, onRateClick, viewingUserId }: MediaDetailsModalProps) {
+export const MediaDetailsModal = React.memo(function MediaDetailsModal({ item, onClose, onLogEpisode, fullScreen, onRateClick, viewingUserId }: MediaDetailsModalProps) {
   useScrollLock(!!item);
 
   const [mediaDetails, setMediaDetails] = useState<any | null>(null);
@@ -345,4 +345,4 @@ export function MediaDetailsModal({ item, onClose, onLogEpisode, fullScreen, onR
       )}
     </AnimatePresence>
   );
-}
+});
