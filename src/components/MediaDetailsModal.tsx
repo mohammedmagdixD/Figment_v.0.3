@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence, useAnimation, PanInfo, useDragControls } from 'motion/react';
 import { Loader2, ArrowLeft, Star } from 'lucide-react';
 import { SearchResult, getPodcastEpisodes, PodcastEpisode, getMovieDetails, getTvDetails, MovieDetails, getAnimeDetails, getMangaDetails, AnimeDetails, MangaDetails, getBookDetails, getAudioDetails } from '../services/api';
-import { RatingModule } from './RatingModule';
+import { LogMediaModal } from './LogMediaModal';
 import { haptics } from '../utils/haptics';
 import { useScrollLock } from '../hooks/useScrollLock';
 import { UniversalDetailCard } from './UniversalDetailCard';
@@ -23,7 +23,7 @@ import { getUserMediaInteraction } from '../services/supabaseData';
 interface MediaDetailsModalProps {
   item: SearchResult & { rating?: number; dateAdded?: string; type?: string } | null;
   onClose: () => void;
-  onLogEpisode?: (episode: PodcastEpisode, rating: number, date: string, liked: boolean, rewatched: boolean) => void;
+  onLogEpisode?: (episode: PodcastEpisode, rating: number, date: string, liked: boolean, rewatched: boolean, podcast: any, reviewText?: string, hasSpoilers?: boolean) => void;
   fullScreen?: boolean;
   onRateClick?: () => void;
   viewingUserId?: string;
@@ -159,52 +159,27 @@ export const MediaDetailsModal = React.memo(function MediaDetailsModal({ item, o
 
   const renderMediaContent = () => {
     if (loggingEpisode) {
+      const episodeItem: SearchResult = {
+        id: loggingEpisode.id,
+        title: loggingEpisode.title,
+        subtitle: item.title,
+        image: loggingEpisode.image || item.image,
+        type: 'podcast-episode',
+        description: loggingEpisode.description
+      };
+
       return (
-        <div className="p-6 overflow-y-auto hide-scrollbar bg-[var(--system-background)] overlay-content flex flex-col h-full">
-          <div className="flex items-center gap-4 mb-6">
-            <motion.button 
-              whileTap={{ scale: 0.95 }}
-              transition={{ type: "spring", stiffness: 600, damping: 35 }}
-              onClick={() => {
-                haptics.light();
-                setLoggingEpisode(null);
-              }} 
-              className="w-11 h-11 flex items-center justify-center bg-[var(--secondary-system-background)] rounded-full text-[var(--secondary-label)] hover:text-[var(--label)] transition-colors"
-            >
-              <ArrowLeft className="w-5 h-5" />
-            </motion.button>
-            <h2 className="font-sans text-xl font-semibold text-[var(--label)]">Log Episode</h2>
-          </div>
-          
-          <div className="mb-6">
-            <h3 className="font-sans font-semibold text-base text-[var(--label)] line-clamp-2 mb-1">{loggingEpisode.title}</h3>
-            <p className="font-sans text-sm text-[var(--secondary-label)] line-clamp-2">{item.title}</p>
-          </div>
-
-          <div className="mb-auto px-1">
-            <RatingModule
-              rating={rating}
-              onRatingChange={setRating}
-              liked={liked}
-              onLikedChange={setLiked}
-              date={date}
-              onDateChange={setDate}
-              showRewatch={item.type === 'movie' || item.type === 'tv' || item.type === 'anime'}
-              rewatched={rewatched}
-              onRewatchedChange={setRewatched}
-            />
-          </div>
-
-          <motion.button 
-            whileHover={{ scale: window.matchMedia('(hover: hover)').matches ? 1.02 : 1 }}
-            whileTap={{ scale: 0.95 }}
-            transition={{ type: "spring", stiffness: 600, damping: 35 }}
-            onClick={handleLogEpisode}
-            className="w-full bg-[var(--label)] text-[var(--system-background)] rounded-xl py-4 font-medium text-base hover:opacity-90 transition-colors mt-8"
-          >
-            Save to Diary
-          </motion.button>
-        </div>
+        <LogMediaModal
+          isOpen={!!loggingEpisode}
+          onClose={() => setLoggingEpisode(null)}
+          item={episodeItem}
+          onSave={async (savedItem, details) => {
+            if (onLogEpisode) {
+              await onLogEpisode(loggingEpisode, details.rating, details.date, details.liked, details.rewatched, item, details.reviewText, details.hasSpoilers);
+            }
+            setLoggingEpisode(null);
+          }}
+        />
       );
     }
 

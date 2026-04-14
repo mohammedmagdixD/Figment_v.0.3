@@ -297,8 +297,8 @@ export const AddView = React.memo(function AddView({ onAddItem, initialType }: {
         isOpen={!!selectedItem}
         onClose={() => setSelectedItem(null)}
         item={selectedItem}
-        onSave={(item, details) => {
-          onAddItem(item, details);
+        onSave={async (item, details) => {
+          await onAddItem(item, details);
           setSelectedItem(null);
         }}
       />

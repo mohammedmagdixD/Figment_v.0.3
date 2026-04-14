@@ -177,8 +177,13 @@ export async function getUserMediaInteraction(userId: string, externalId: string
     const { data, error } = await supabase
       .from('diary_entries')
       .select(`
+        id,
+        is_liked,
+        is_rewatch,
         rating,
         logged_date,
+        review_text,
+        is_spoiler,
         media_items!inner (
           external_id,
           media_type
@@ -205,7 +210,14 @@ export async function getUserDiary(userId: string) {
     const { data, error } = await supabase
       .from('diary_entries')
       .select(`
-        *,
+        id,
+        rating,
+        is_liked,
+        is_rewatch,
+        logged_date,
+        created_at,
+        review_text,
+        is_spoiler,
         media_items (*)
       `)
       .eq('user_id', userId)
@@ -224,7 +236,7 @@ export async function getUserDiary(userId: string) {
 export async function logMediaItem(
   userId: string,
   mediaItem: any,
-  logDetails: { rating: number; date: string; liked: boolean; rewatched: boolean }
+  logDetails: { rating: number; date: string; liked: boolean; rewatched: boolean; reviewText?: string; hasSpoilers?: boolean }
 ) {
   try {
     // 1. Upsert into media_items
@@ -253,6 +265,8 @@ export async function logMediaItem(
         is_liked: logDetails.liked,
         is_rewatch: logDetails.rewatched,
         logged_date: logDetails.date,
+        review_text: logDetails.reviewText ? logDetails.reviewText.trim() || null : null,
+        is_spoiler: logDetails.hasSpoilers || false,
       })
       .select()
       .single();

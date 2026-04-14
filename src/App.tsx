@@ -249,7 +249,7 @@ export default function App() {
     window.history.pushState({}, '', '/add');
   }, []);
 
-  const handleAddItem = React.useCallback(async (item: SearchResult, details: { rating: number, date: string, liked: boolean, rewatched: boolean }) => {
+  const handleAddItem = React.useCallback(async (item: SearchResult, details: { rating: number, date: string, liked: boolean, rewatched: boolean, reviewText?: string, hasSpoilers?: boolean }) => {
     if (!user) return;
     try {
       const mediaItemToLog = { ...item, type: item.type || activeSection?.type || 'movie' };
@@ -274,10 +274,11 @@ export default function App() {
       refetchShelves();
     } catch (error) {
       console.error('Failed to log media:', error);
+      throw error;
     }
   }, [user, activeSection, refetchDiary, refetchShelves]);
 
-  const handleLogEpisode = React.useCallback(async (episode: any, rating: number, date: string, liked: boolean, rewatched: boolean, podcast: any) => {
+  const handleLogEpisode = React.useCallback(async (episode: any, rating: number, date: string, liked: boolean, rewatched: boolean, podcast: any, reviewText?: string, hasSpoilers?: boolean) => {
     if (!user) return;
     try {
       const mediaItemToLog = {
@@ -294,12 +295,13 @@ export default function App() {
       } catch (e) {
         console.error('Failed to sync episode to shelf:', e);
       }
-      await logMediaItem(user.id, mediaItemToLog, { rating, date, liked, rewatched });
+      await logMediaItem(user.id, mediaItemToLog, { rating, date, liked, rewatched, reviewText, hasSpoilers });
       
       refetchDiary();
       refetchShelves();
     } catch (error) {
       console.error('Failed to log episode:', error);
+      throw error;
     }
   }, [user, refetchDiary, refetchShelves]);
 

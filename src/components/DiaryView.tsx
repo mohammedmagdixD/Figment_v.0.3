@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { MediaType } from '../services/api';
-import { Star, Heart, Repeat } from 'lucide-react';
+import { Star, Heart, Repeat, EyeOff } from 'lucide-react';
 import { motion } from 'motion/react';
 import { haptics } from '../utils/haptics';
 
@@ -10,6 +10,8 @@ export interface DiaryEntry {
   rating: number;
   liked?: boolean;
   rewatched?: boolean;
+  reviewText: string | null;
+  hasSpoilers: boolean;
   media: {
     id: string;
     title: string;
@@ -19,6 +21,32 @@ export interface DiaryEntry {
     description?: string;
   };
 }
+
+import DOMPurify from 'dompurify';
+import { marked } from 'marked';
+
+const ReviewContent = ({ text, hasSpoilers }: { text: string, hasSpoilers: boolean }) => {
+  const [revealed, setRevealed] = useState(!hasSpoilers);
+
+  if (!revealed) {
+    return (
+      <button 
+        onClick={() => { haptics.light(); setRevealed(true); }}
+        className="mt-3 text-sm text-[var(--secondary-label)] font-sans bg-[var(--tertiary-system-background)] px-3 py-1.5 rounded-lg w-fit flex items-center gap-2 hover:bg-[var(--secondary-system-background)] transition-colors"
+      >
+        <EyeOff className="w-4 h-4" />
+        This review contains spoilers. Tap to reveal.
+      </button>
+    );
+  }
+
+  return (
+    <div 
+      className="mt-3 text-sm text-[var(--label)] font-serif prose prose-sm dark:prose-invert max-w-none"
+      dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(marked.parse(text) as string) }}
+    />
+  );
+};
 
 const DiaryViewComponent = ({ entries }: { entries: DiaryEntry[] }) => {
   const [filter, setFilter] = useState<MediaType | 'all'>('all');
@@ -108,6 +136,9 @@ const DiaryViewComponent = ({ entries }: { entries: DiaryEntry[] }) => {
                         {entry.liked && <Heart className="w-3.5 h-3.5 text-red-500 fill-red-500" />}
                         {entry.rewatched && <Repeat className="w-3.5 h-3.5 text-[var(--ios-blue)]" />}
                       </div>
+                    )}
+                    {entry.reviewText && (
+                      <ReviewContent text={entry.reviewText} hasSpoilers={entry.hasSpoilers} />
                     )}
                   </div>
                 </motion.div>

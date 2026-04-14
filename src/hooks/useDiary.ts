@@ -20,6 +20,8 @@ export function useDiary(userId: string | undefined) {
         rating: d.rating,
         liked: d.is_liked,
         rewatched: d.is_rewatch,
+        reviewText: d.review_text,
+        hasSpoilers: d.is_spoiler,
         media: {
           id: d.media_items.external_id,
           title: d.media_items.title,
