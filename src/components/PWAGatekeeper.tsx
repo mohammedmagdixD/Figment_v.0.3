@@ -75,7 +75,7 @@ export function PWAGatekeeper({ children }: PWAGatekeeperProps) {
 
   // Otherwise, show the gatekeeper
   return (
-    <div className="fixed inset-0 z-[9999] bg-[var(--system-background)] dark:bg-[var(--secondary-system-background)] flex flex-col items-center justify-center p-6 text-[var(--label)]">
+    <div className="fixed inset-0 z-[9999] bg-system-background  flex flex-col items-center justify-center p-6 text-label">
       <motion.div
         initial={{ opacity: 0, y: 40, scale: 0.95 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -83,19 +83,19 @@ export function PWAGatekeeper({ children }: PWAGatekeeperProps) {
         className="w-full max-w-sm flex flex-col items-center text-center"
       >
         <h1 className="text-2xl font-serif font-bold mb-3 tracking-tight">Install Figment</h1>
-        <p className="text-[var(--secondary-label)] mb-8 leading-relaxed">
+        <p className="text-secondary-label mb-8 leading-relaxed">
           For the best experience, please install Figment to your home screen.
         </p>
 
         {isIOS ? (
           <div className="w-full text-left">
-            <ol className="space-y-4 text-[var(--label)] font-medium">
+            <ol className="space-y-4 text-label font-medium">
               <li className="flex items-center gap-3">
-                <span className="flex items-center justify-center w-6 h-6 rounded-full bg-[var(--label)] text-[var(--system-background)] text-sm font-bold shrink-0">1</span>
+                <span className="flex items-center justify-center w-6 h-6 rounded-full bg-label text-system-background text-sm font-bold shrink-0">1</span>
                 <span>Tap the <Share className="inline-block w-5 h-5 mx-1 text-ios-blue" /> Share icon below</span>
               </li>
               <li className="flex items-center gap-3">
-                <span className="flex items-center justify-center w-6 h-6 rounded-full bg-[var(--label)] text-[var(--system-background)] text-sm font-bold shrink-0">2</span>
+                <span className="flex items-center justify-center w-6 h-6 rounded-full bg-label text-system-background text-sm font-bold shrink-0">2</span>
                 <span>Scroll down and tap <br/><span className="flex items-center gap-2 mt-1 text-ios-blue"><PlusSquare className="w-5 h-5" /> Add to Home Screen</span></span>
               </li>
             </ol>
@@ -105,7 +105,7 @@ export function PWAGatekeeper({ children }: PWAGatekeeperProps) {
             <button
               onClick={handleInstallClick}
               disabled={!deferredPrompt}
-              className="w-full py-4 px-6 bg-[var(--label)] text-[var(--system-background)] rounded-full font-semibold text-lg hover:opacity-90 transition-opacity shadow-md disabled:opacity-50"
+              className="w-full py-4 px-6 bg-label text-system-background rounded-full font-semibold text-lg hover:opacity-90 transition-opacity shadow-md disabled:opacity-50"
             >
               Install Figment
             </button>

@@ -15,16 +15,16 @@ export const FeedView = React.memo(function FeedView() {
   return (
     <div className="flex flex-col h-full overflow-hidden">
       <div className="px-4 pt-4 pb-2 shrink-0">
-        <h2 className="font-serif text-2xl font-semibold text-[var(--label)]">Feed</h2>
+        <h2 className="font-serif text-2xl font-semibold text-label">Feed</h2>
       </div>
       
       <div ref={parentRef} className="flex-1 overflow-y-auto px-4 hide-scrollbar scroll-container pb-28">
         {items.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-center pb-20">
-            <h2 className="font-serif text-2xl font-semibold text-[var(--label)] mb-2">
+            <h2 className="font-serif text-2xl font-semibold text-label mb-2">
               Available Soon xD
             </h2>
-            <p className="font-sans text-sm text-[var(--secondary-label)] max-w-[250px]">
+            <p className="font-sans text-sm text-secondary-label max-w-[250px]">
               We're working hard to bring you a personalized feed of updates from your friends.
             </p>
           </div>

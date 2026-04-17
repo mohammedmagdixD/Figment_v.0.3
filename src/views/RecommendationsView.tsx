@@ -62,7 +62,7 @@ const ExpandableMessage = ({ text }: { text: string }) => {
     <div className="flex flex-col items-start w-full">
       <p 
         ref={textRef}
-        className={`text-[var(--label)] leading-relaxed ${!isExpanded ? 'line-clamp-3' : ''}`}
+        className={`text-label leading-relaxed ${!isExpanded ? 'line-clamp-3' : ''}`}
       >
         "{text}{!isExpanded && isTruncatable ? '' : '"'}
       </p>
@@ -73,7 +73,7 @@ const ExpandableMessage = ({ text }: { text: string }) => {
             e.stopPropagation();
             setIsExpanded(!isExpanded);
           }}
-          className="text-[var(--label)] mt-0.5 hover:opacity-80 transition-opacity"
+          className="text-label mt-0.5 hover:opacity-80 transition-opacity"
         >
           {isExpanded ? 'less' : 'more'}
         </button>
@@ -123,7 +123,7 @@ export const RecommendationsView = React.memo(function RecommendationsView({ vie
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-full flex-1">
-        <Loader2 className="w-8 h-8 text-[var(--secondary-label)] animate-spin" />
+        <Loader2 className="w-8 h-8 text-secondary-label animate-spin" />
       </div>
     );
   }
@@ -131,13 +131,13 @@ export const RecommendationsView = React.memo(function RecommendationsView({ vie
   if (recommendations.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-full flex-1 px-4 text-center">
-        <div className="w-16 h-16 mb-4 rounded-full bg-[var(--secondary-system-background)] flex items-center justify-center">
-          <Sparkles className="w-8 h-8 text-[var(--secondary-label)]" />
+        <div className="w-16 h-16 mb-4 rounded-full bg-secondary-system-background flex items-center justify-center">
+          <Sparkles className="w-8 h-8 text-secondary-label" />
         </div>
-        <h2 className="font-serif text-xl font-semibold text-[var(--label)] mb-2">
+        <h2 className="font-serif text-xl font-semibold text-label mb-2">
           No Recommendations Yet :/
         </h2>
-        <p className="font-sans text-sm text-[var(--secondary-label)] max-w-[250px]">
+        <p className="font-sans text-sm text-secondary-label max-w-[250px]">
           Share your profile to get personalized recommendations from your friends.
         </p>
       </div>
@@ -146,7 +146,7 @@ export const RecommendationsView = React.memo(function RecommendationsView({ vie
 
   return (
     <div className="pb-28 px-4 pt-4">
-      <h2 className="font-serif text-2xl font-semibold text-[var(--label)] mb-4">
+      <h2 className="font-serif text-2xl font-semibold text-label mb-4">
         For You
       </h2>
       <div className="space-y-4">
@@ -163,7 +163,7 @@ export const RecommendationsView = React.memo(function RecommendationsView({ vie
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95 }}
                 transition={{ type: "spring", stiffness: 400, damping: 30, delay: index * 0.1 }}
-                className="p-4 rounded-2xl bg-[var(--secondary-system-background)] border border-[var(--separator)] shadow-sm flex flex-col gap-3 relative group"
+                className="p-4 rounded-2xl bg-secondary-system-background border border-separator shadow-sm flex flex-col gap-3 relative group"
               >
               <div className="flex items-center justify-between gap-4">
                 <button 
@@ -175,32 +175,32 @@ export const RecommendationsView = React.memo(function RecommendationsView({ vie
                   }}
                   className={`flex items-center gap-2 text-left ${!rec.is_anonymous && rec.sender?.handle ? 'cursor-pointer hover:opacity-80 transition-opacity' : 'cursor-default'}`}
                 >
-                  <div className="w-10 h-10 rounded-full bg-[var(--system-background)] flex items-center justify-center shrink-0 overflow-hidden border border-[var(--separator)]">
+                  <div className="w-10 h-10 rounded-full bg-system-background flex items-center justify-center shrink-0 overflow-hidden border border-separator">
                     {!rec.is_anonymous && rec.sender?.avatar_url ? (
                       <img src={rec.sender.avatar_url} alt={senderName} className="w-full h-full object-cover" />
                     ) : (
-                      <Sparkles className="w-5 h-5 text-[var(--secondary-label)]" />
+                      <Sparkles className="w-5 h-5 text-secondary-label" />
                     )}
                   </div>
                   <div>
-                    <p className="font-sans text-sm font-medium text-[var(--label)]">
+                    <p className="font-sans text-sm font-medium text-label">
                       {senderName}
                     </p>
-                    <p className="font-sans text-xs text-[var(--secondary-label)]">
+                    <p className="font-sans text-xs text-secondary-label">
                       {new Date(rec.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                     </p>
                   </div>
                 </button>
 
                 <div className="flex items-center gap-2">
-                  <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-[var(--separator)] !bg-transparent text-[var(--secondary-label)]">
+                  <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-separator !bg-transparent text-secondary-label">
                     {getIconForType(media?.media_type)}
                     <span className="text-xs font-medium">{getLabelForType(media?.media_type)}</span>
                   </div>
                   {isOwnProfile && (
                     <button
                       onClick={() => setDeleteConfirmId(rec.id)}
-                      className="p-1.5 rounded-full border border-[var(--separator)] !bg-transparent text-[var(--secondary-label)] hover:text-red-500 hover:border-red-500/30 hover:!bg-red-500/10 transition-colors"
+                      className="p-1.5 rounded-full border border-separator !bg-transparent text-secondary-label hover:text-red-500 hover:border-red-500/30 hover:!bg-red-500/10 transition-colors"
                       aria-label="Delete recommendation"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -223,7 +223,7 @@ export const RecommendationsView = React.memo(function RecommendationsView({ vie
                 }}
                 className="flex gap-4 mt-2 text-left hover:opacity-80 transition-opacity group/media"
               >
-                <div className="w-16 h-24 shrink-0 rounded-lg overflow-hidden bg-[var(--system-background)] border border-[var(--separator)] shadow-sm">
+                <div className="w-16 h-24 shrink-0 rounded-lg overflow-hidden bg-system-background border border-separator shadow-sm">
                   {media?.image_url ? (
                     <img src={media.image_url} alt={media.title} className="w-full h-full object-cover transition-transform duration-300 group-hover/media:scale-105" referrerPolicy="no-referrer" loading="lazy" />
                   ) : (
@@ -233,10 +233,10 @@ export const RecommendationsView = React.memo(function RecommendationsView({ vie
                   )}
                 </div>
                 <div className="flex-1 min-w-0 flex flex-col justify-center">
-                  <h3 className="font-sans font-semibold text-base text-[var(--label)] line-clamp-2">
+                  <h3 className="font-sans font-semibold text-base text-label line-clamp-2">
                     {media?.title || 'Unknown Title'}
                   </h3>
-                  <p className="font-sans text-sm text-[var(--secondary-label)] line-clamp-1 mt-0.5">
+                  <p className="font-sans text-sm text-secondary-label line-clamp-1 mt-0.5">
                     {media?.subtitle}
                   </p>
                 </div>

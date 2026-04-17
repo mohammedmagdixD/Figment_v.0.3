@@ -107,7 +107,7 @@ export function AddSocialLinkModal({ isOpen, onClose, userId, currentCount, onAd
             onClick={() => {
               if (sheetState === 'half') handleClose();
             }}
-            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+            className="absolute inset-0 bg-overlay backdrop-blur-sm"
           />
           
           <motion.div
@@ -127,33 +127,33 @@ export function AddSocialLinkModal({ isOpen, onClose, userId, currentCount, onAd
             dragElastic={0.2}
             onDragEnd={handleDragEnd}
             onClick={(e) => e.stopPropagation()}
-            className="relative w-full bg-[var(--system-background)] shadow-2xl overflow-hidden flex flex-col max-w-md rounded-t-[32px] sm:rounded-3xl h-[95vh] sm:h-[85vh] sm:max-h-[850px]"
+            className="relative w-full bg-system-background shadow-2xl overflow-hidden flex flex-col max-w-md rounded-t-[32px] sm:rounded-3xl h-[95vh] sm:h-[85vh] sm:max-h-[850px]"
           >
           {/* Dash Icon for dragging */}
           <div 
             className="absolute top-0 left-0 right-0 z-50 flex justify-center pt-3 pb-3 cursor-grab active:cursor-grabbing touch-none"
             onPointerDown={(e) => dragControls.start(e)}
           >
-            <div className="w-12 h-1.5 bg-[var(--tertiary-label)] rounded-full" />
+            <div className="w-12 h-1.5 bg-tertiary-label rounded-full" />
           </div>
 
-          <div className="flex items-center justify-between p-4 pt-8 border-b border-[var(--separator)] shrink-0">
+          <div className="flex items-center justify-between p-4 pt-8 border-b border-separator shrink-0">
             {step === 2 ? (
               <button
                 onClick={() => setStep(1)}
-                className="p-2 -ml-2 rounded-full hover:bg-[var(--secondary-system-background)] text-[var(--label)] transition-colors"
+                className="p-2 -ml-2 rounded-full hover:bg-secondary-system-background text-label transition-colors"
               >
                 <CaretLeft className="w-5 h-5" />
               </button>
             ) : (
               <div className="w-9" /> // Spacer
             )}
-            <h2 className="text-lg font-bold text-[var(--label)]">
+            <h2 className="text-lg font-bold text-label">
               {step === 1 ? 'Add Link' : SOCIAL_PLATFORMS[selectedPlatform!]?.name}
             </h2>
             <button
               onClick={handleClose}
-              className="p-2 -mr-2 rounded-full hover:bg-[var(--secondary-system-background)] text-[var(--secondary-label)] transition-colors"
+              className="p-2 -mr-2 rounded-full hover:bg-secondary-system-background text-secondary-label transition-colors"
             >
               <X className="w-5 h-5" />
             </button>
@@ -176,13 +176,13 @@ export function AddSocialLinkModal({ isOpen, onClose, userId, currentCount, onAd
             {step === 1 ? (
               <div className="p-4 pb-8">
                 <div className="relative mb-6">
-                  <MagnifyingGlass className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--secondary-label)]" />
+                  <MagnifyingGlass className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-secondary-label" />
                   <input
                     type="text"
                     placeholder="Search platforms..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full bg-[var(--secondary-system-background)] border border-[var(--separator)] rounded-2xl py-3 pl-11 pr-4 text-base font-sans text-[var(--label)] placeholder:text-[var(--secondary-label)] focus:outline-none focus:ring-2 focus:ring-[var(--label)]/10 transition-all"
+                    className="w-full bg-secondary-system-background border border-separator rounded-2xl py-3 pl-11 pr-4 text-base font-sans text-label placeholder:text-secondary-label focus:outline-none focus:ring-2 focus:ring-label/10 transition-all"
                   />
                 </div>
 
@@ -190,11 +190,11 @@ export function AddSocialLinkModal({ isOpen, onClose, userId, currentCount, onAd
                   {Object.entries(groupedPlatforms).map(([category, platforms]) => (
                     <div key={category}>
                       <div className="flex items-center gap-3 mb-3">
-                        <div className="flex-1 h-px bg-[var(--separator)]"></div>
-                        <h3 className="text-[11px] font-semibold text-[var(--secondary-label)] uppercase tracking-wider">
+                        <div className="flex-1 h-px bg-separator"></div>
+                        <h3 className="text-[11px] font-semibold text-secondary-label uppercase tracking-wider">
                           {category}
                         </h3>
-                        <div className="flex-1 h-px bg-[var(--separator)]"></div>
+                        <div className="flex-1 h-px bg-separator"></div>
                       </div>
                       <div className="space-y-2">
                         {platforms.map(p => {
@@ -206,10 +206,10 @@ export function AddSocialLinkModal({ isOpen, onClose, userId, currentCount, onAd
                                 setSelectedPlatform(p.id);
                                 setStep(2);
                               }}
-                              className="w-full flex items-center justify-between px-4 py-3 rounded-full border border-[var(--separator)] hover:bg-[var(--secondary-system-background)] transition-colors text-left"
+                              className="w-full flex items-center justify-between px-4 py-3 rounded-full border border-separator hover:bg-secondary-system-background transition-colors text-left"
                             >
-                              <SocialIcon icon={Icon} className="w-5 h-5 text-[var(--label)] shrink-0" />
-                              <p className="text-[var(--label)] font-medium text-[15px]">{p.name}</p>
+                              <SocialIcon icon={Icon} className="w-5 h-5 text-label shrink-0" />
+                              <p className="text-label font-medium text-[15px]">{p.name}</p>
                             </button>
                           );
                         })}
@@ -221,7 +221,7 @@ export function AddSocialLinkModal({ isOpen, onClose, userId, currentCount, onAd
             ) : (
               <div className="p-4 space-y-6">
                 <div>
-                  <label className="block text-sm font-medium text-[var(--secondary-label)] mb-2">
+                  <label className="block text-sm font-medium text-secondary-label mb-2">
                     {selectedPlatform === 'personal_website' ? 'Website URL' : 'Username / Handle'}
                   </label>
                   <input
@@ -229,7 +229,7 @@ export function AddSocialLinkModal({ isOpen, onClose, userId, currentCount, onAd
                     value={handle}
                     onChange={(e) => setHandle(e.target.value)}
                     placeholder={selectedPlatform === 'personal_website' ? 'https://example.com' : '@username'}
-                    className="w-full bg-[var(--secondary-system-background)] border border-[var(--separator)] rounded-xl p-3 text-[var(--label)] placeholder:text-[var(--tertiary-label)] focus:outline-none focus:ring-2 focus:ring-[var(--label)]/10 transition-all"
+                    className="w-full bg-secondary-system-background border border-separator rounded-xl p-3 text-label placeholder:text-tertiary-label focus:outline-none focus:ring-2 focus:ring-label/10 transition-all"
                     autoFocus
                   />
                 </div>
@@ -237,7 +237,7 @@ export function AddSocialLinkModal({ isOpen, onClose, userId, currentCount, onAd
                 <button
                   onClick={handleSave}
                   disabled={!handle.trim() || isSaving}
-                  className="w-full py-4 rounded-2xl bg-[var(--label)] text-[var(--system-background)] font-semibold text-lg flex items-center justify-center gap-2 disabled:opacity-50 hover:opacity-90 transition-opacity shadow-lg"
+                  className="w-full py-4 rounded-2xl bg-label text-system-background font-semibold text-lg flex items-center justify-center gap-2 disabled:opacity-50 hover:opacity-90 transition-opacity shadow-lg"
                 >
                   {isSaving ? 'Saving...' : 'Save Link'}
                 </button>

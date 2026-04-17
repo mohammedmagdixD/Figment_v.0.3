@@ -4,10 +4,12 @@
  */
 
 import React, { useState, Component, ErrorInfo, ReactNode, useEffect, Suspense, lazy } from 'react';
+import { mutate } from 'swr';
 import { Header } from './components/Header';
 import { MediaScroller } from './components/MediaScroller';
-import { RecommendationModal } from './components/RecommendationModal';
-import { AuthScreen } from './components/AuthScreen';
+// Lazy load heavy overlays/modals to reduce initial main thread blocking
+const RecommendationModal = lazy(() => import('./components/RecommendationModal').then(module => ({ default: module.RecommendationModal })));
+const AuthScreen = lazy(() => import('./components/AuthScreen').then(module => ({ default: module.AuthScreen })));
 import { DiaryEntry } from './components/DiaryView';
 import { Reorder, useDragControls, AnimatePresence } from 'motion/react';
 import { SearchResult, MediaType, Album } from './services/api';
@@ -51,18 +53,18 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
   render() {
     if (this.state.hasError) {
       return (
-        <div className="min-h-screen bg-light sm:bg-[#E5E5E5] flex items-center justify-center p-4 font-sans">
-          <div className="max-w-md w-full bg-white rounded-3xl p-8 shadow-sm text-center border border-black/5">
-            <div className="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6">
+        <div className="min-h-screen bg-secondary-system-background flex items-center justify-center p-4 font-sans">
+          <div className="max-w-md w-full bg-system-background rounded-3xl p-8 shadow-sm text-center border border-separator/30">
+            <div className="w-16 h-16 bg-ios-red/10 text-ios-red rounded-full flex items-center justify-center mx-auto mb-6">
               <AlertTriangle className="w-8 h-8" />
             </div>
-            <h2 className="text-2xl font-serif font-semibold text-ink-black mb-3">Something went wrong</h2>
-            <p className="text-gray text-sm mb-8">
+            <h2 className="text-2xl font-serif font-semibold text-label mb-3">Something went wrong</h2>
+            <p className="text-secondary-label text-sm mb-8">
               We're sorry, but there was an error loading this content. Please try refreshing the page.
             </p>
             <button
               onClick={() => window.location.reload()}
-              className="w-full bg-ink-black text-white rounded-xl py-3.5 font-medium hover:bg-ink-black/90 transition-colors"
+              className="w-full bg-label text-system-background rounded-xl py-3.5 font-medium hover:opacity-90 transition-opacity"
             >
               Refresh Page
             </button>
@@ -82,7 +84,7 @@ const DraggableSection = React.memo(({ section, isFirstSection, onAddClick, onLo
       value={section} 
       dragListener={false} 
       dragControls={controls}
-      className="relative bg-[var(--system-background)] dark:bg-[var(--secondary-system-background)] z-0"
+      className="relative bg-system-background z-0"
     >
       <MediaScroller 
         section={section} 
@@ -254,6 +256,30 @@ export default function App() {
     try {
       const mediaItemToLog = { ...item, type: item.type || activeSection?.type || 'movie' };
       
+      // OPTIMISTIC UI: Instantly update diary cache before network request
+      const fakeBackendEntry = {
+        id: 'temp-' + Date.now(),
+        rating: details.rating,
+        is_liked: details.liked,
+        is_rewatch: details.rewatched,
+        logged_date: details.date,
+        created_at: new Date().toISOString(),
+        review_text: details.reviewText,
+        is_spoiler: details.hasSpoilers,
+        media_items: {
+          external_id: mediaItemToLog.id,
+          title: mediaItemToLog.title,
+          subtitle: mediaItemToLog.subtitle,
+          image_url: mediaItemToLog.image,
+          media_type: mediaItemToLog.type
+        }
+      };
+      
+      mutate(['diary', user.id], (curr: any) => {
+        return curr ? [fakeBackendEntry, ...curr] : [fakeBackendEntry];
+      }, false); // don't revalidate yet
+
+      // Background Network Processing
       if (activeSection) {
         try {
           await addSectionItem(activeSection.id, mediaItemToLog, user.id);
@@ -270,13 +296,15 @@ export default function App() {
       
       await logMediaItem(user.id, mediaItemToLog, details);
       
-      refetchDiary();
-      refetchShelves();
+      // Revalidate to ensure synchronicity
+      mutate(['diary', user.id]);
+      mutate(['shelves', user.id]);
     } catch (error) {
       console.error('Failed to log media:', error);
+      mutate(['diary', user.id]); // Rollback on error
       throw error;
     }
-  }, [user, activeSection, refetchDiary, refetchShelves]);
+  }, [user, activeSection]);
 
   const handleLogEpisode = React.useCallback(async (episode: any, rating: number, date: string, liked: boolean, rewatched: boolean, podcast: any, reviewText?: string, hasSpoilers?: boolean) => {
     if (!user) return;
@@ -290,6 +318,30 @@ export default function App() {
         description: episode.description
       };
       
+      // OPTIMISTIC UI: Instantly update diary cache before network request
+      const fakeBackendEntry = {
+        id: 'temp-' + Date.now(),
+        rating: rating,
+        is_liked: liked,
+        is_rewatch: rewatched,
+        logged_date: date,
+        created_at: new Date().toISOString(),
+        review_text: reviewText,
+        is_spoiler: hasSpoilers,
+        media_items: {
+          external_id: mediaItemToLog.id,
+          title: mediaItemToLog.title,
+          subtitle: mediaItemToLog.subtitle,
+          image_url: mediaItemToLog.image,
+          media_type: mediaItemToLog.type
+        }
+      };
+      
+      mutate(['diary', user.id], (curr: any) => {
+        return curr ? [fakeBackendEntry, ...curr] : [fakeBackendEntry];
+      }, false);
+
+      // Background Network Processing
       try {
         await syncMediaToShelf(user.id, mediaItemToLog);
       } catch (e) {
@@ -297,13 +349,14 @@ export default function App() {
       }
       await logMediaItem(user.id, mediaItemToLog, { rating, date, liked, rewatched, reviewText, hasSpoilers });
       
-      refetchDiary();
-      refetchShelves();
+      mutate(['diary', user.id]);
+      mutate(['shelves', user.id]);
     } catch (error) {
       console.error('Failed to log episode:', error);
+      mutate(['diary', user.id]); // Rollback on error
       throw error;
     }
-  }, [user, refetchDiary, refetchShelves]);
+  }, [user]);
 
   const handleRecommendSubmit = React.useCallback(async (recommendation: any) => {
     if (!viewingUserId) return;
@@ -355,18 +408,18 @@ export default function App() {
 
   if (isLoading || isDataLoading) {
     return (
-      <div className="min-h-[100dvh] bg-light dark:bg-[var(--secondary-system-background)] flex items-center justify-center">
-        <Loader2 className="w-8 h-8 text-[var(--secondary-label)] animate-spin" />
+      <div className="min-h-[100dvh] bg-system-background flex items-center justify-center">
+        <Loader2 className="w-8 h-8 text-secondary-label animate-spin" />
       </div>
     );
   }
 
   return (
     <ErrorBoundary>
-      <div className="min-h-[100dvh] bg-light dark:bg-[var(--secondary-system-background)] sm:bg-[#E5E5E5] sm:dark:bg-[var(--secondary-system-background)] text-[var(--label)] font-sans sm:pb-12 selection:bg-quiet-sky dark:selection:bg-ios-blue/30">
-        <div className="max-w-[428px] mx-auto bg-[var(--system-background)] dark:bg-[var(--secondary-system-background)] h-[100dvh] sm:h-[850px] shadow-sm sm:rounded-[40px] sm:my-8 sm:overflow-hidden sm:border-[8px] sm:border-ink-black dark:sm:border-[#2C2C2E] relative flex flex-col">
+      <div className="min-h-[100dvh] bg-secondary-system-background text-label font-sans sm:pb-12 selection:bg-ios-blue/30">
+        <div className="max-w-[428px] mx-auto bg-system-background h-[100dvh] sm:h-[850px] shadow-sm sm:rounded-[40px] sm:my-8 sm:overflow-hidden sm:border-[8px] sm:border-secondary-system-background relative flex flex-col">
           {/* iOS Status Bar Spacer (simulated for desktop view) */}
-          <div className="hidden sm:block h-6 w-full bg-[var(--system-background)] dark:bg-[var(--secondary-system-background)] shrink-0" />
+          <div className="hidden sm:block h-6 w-full bg-system-background shrink-0" />
           
           <div className="flex-1 overflow-hidden relative flex flex-col pt-safe-top">
             <main className={`flex-1 overflow-y-auto hide-scrollbar scroll-container pb-28 space-y-2 ${renderedTab === 'profile' ? 'block' : 'hidden'}`}>
@@ -377,7 +430,7 @@ export default function App() {
                 onAuthClick={handleAuthClick} 
                 onSocialsChange={handleSocialsChange}
               />
-              <div className="w-full h-[0.5px] bg-[var(--separator)] my-4" />
+              <div className="w-full h-[0.5px] bg-separator my-4" />
               
               {sections.filter(s => s.items && s.items.length > 0).length > 0 ? (
                 isOwnProfile ? (
@@ -406,7 +459,7 @@ export default function App() {
                 ) : (
                   <div className="space-y-2">
                     {sections.filter(s => s.items && s.items.length > 0).map((section) => (
-                      <div key={section.id} className="relative bg-[var(--system-background)] dark:bg-[var(--secondary-system-background)] z-0">
+                      <div key={section.id} className="relative bg-system-background z-0">
                         <MediaScroller 
                           section={section} 
                           dragControls={undefined}
@@ -423,21 +476,21 @@ export default function App() {
                 )
               ) : (
                 <div className="flex flex-col items-center justify-center py-20 px-4 text-center">
-                  <div className="w-16 h-16 mb-4 rounded-full bg-[var(--secondary-system-background)] flex items-center justify-center">
-                    <ListPlus className="w-8 h-8 text-[var(--secondary-label)]" />
+                  <div className="w-16 h-16 mb-4 rounded-full bg-secondary-system-background flex items-center justify-center">
+                    <ListPlus className="w-8 h-8 text-secondary-label" />
                   </div>
-                  <h3 className="font-serif text-xl font-semibold text-[var(--label)] mb-2">No shelves curated yet</h3>
+                  <h3 className="font-serif text-xl font-semibold text-label mb-2">No shelves curated yet</h3>
                   {isOwnProfile && (
-                    <p className="font-sans text-sm text-[var(--secondary-label)] max-w-[250px]">
+                    <p className="font-sans text-sm text-secondary-label max-w-[250px]">
                       Start adding media to your shelves to build your profile.
                     </p>
                   )}
                 </div>
               )}
 
-              <section className="py-2 bg-[var(--system-background)] dark:bg-[var(--secondary-system-background)]">
+              <section className="py-2 bg-system-background">
                 <div className="flex items-center justify-between px-4 mb-3">
-                  <h2 className="font-serif text-lg font-semibold leading-relaxed text-[var(--label)]">
+                  <h2 className="font-serif text-lg font-semibold leading-relaxed text-label">
                     Albums
                   </h2>
                 </div>
@@ -445,20 +498,20 @@ export default function App() {
                   <div className="horizontal-scroll-container hide-scrollbar snap-x snap-mandatory">
                     {albums.map((album) => (
                       <div key={album.id} className="snap-start card-container flex flex-col gap-2 cursor-pointer card-square">
-                        <div className="relative overflow-hidden rounded-xl bg-[var(--secondary-system-background)] shadow-sm border border-[var(--separator)] card-image">
+                        <div className="relative overflow-hidden rounded-xl bg-secondary-system-background shadow-sm border border-separator card-image">
                           {album.coverImage ? (
                             <img src={album.coverImage || undefined} alt={album.title} className="w-full h-full object-cover" />
                           ) : (
-                            <div className="w-full h-full flex items-center justify-center bg-black/5 dark:bg-white/5">
-                              <span className="font-serif text-2xl text-[var(--secondary-label)]">{album.title.charAt(0)}</span>
+                            <div className="w-full h-full flex items-center justify-center bg-tertiary-system-background">
+                              <span className="font-serif text-2xl text-secondary-label">{album.title.charAt(0)}</span>
                             </div>
                           )}
                         </div>
                         <div className="w-full">
-                          <h3 className="font-sans text-base font-semibold leading-tight text-[var(--label)] card-text-truncate">
+                          <h3 className="font-sans text-base font-semibold leading-tight text-label card-text-truncate">
                             {album.title}
                           </h3>
-                          <p className="font-sans text-sm font-medium leading-relaxed text-[var(--secondary-label)] card-text-truncate mt-0.5">
+                          <p className="font-sans text-sm font-medium leading-relaxed text-secondary-label card-text-truncate mt-0.5">
                             {album.tracks.length} {album.tracks.length === 1 ? 'track' : 'tracks'}
                           </p>
                         </div>
@@ -466,7 +519,7 @@ export default function App() {
                     ))}
                   </div>
                 ) : (
-                  <div className="px-4 py-8 text-center text-[var(--secondary-label)] text-sm font-sans">
+                  <div className="px-4 py-8 text-center text-secondary-label text-sm font-sans">
                     No albums created yet.
                   </div>
                 )}
@@ -477,27 +530,27 @@ export default function App() {
 
             <main className={`flex-1 overflow-hidden hide-scrollbar flex flex-col ${renderedTab === 'diary' ? 'flex' : 'hidden'}`}>
               <div className="px-4 pt-4 pb-2 shrink-0">
-                <h2 className="font-serif text-2xl font-semibold text-[var(--label)]">Diary</h2>
+                <h2 className="font-serif text-2xl font-semibold text-label">Diary</h2>
               </div>
-              <Suspense fallback={<div className="flex-1 flex items-center justify-center"><Loader2 className="w-8 h-8 text-[var(--secondary-label)] animate-spin" /></div>}>
+              <Suspense fallback={<div className="flex-1 flex items-center justify-center"><Loader2 className="w-8 h-8 text-secondary-label animate-spin" /></div>}>
                 <DiaryView entries={diary} />
               </Suspense>
             </main>
 
             <main className={`flex-1 overflow-hidden hide-scrollbar flex flex-col ${renderedTab === 'feed' ? 'flex' : 'hidden'}`}>
-              <Suspense fallback={<div className="flex-1 flex items-center justify-center"><Loader2 className="w-8 h-8 text-[var(--secondary-label)] animate-spin" /></div>}>
+              <Suspense fallback={<div className="flex-1 flex items-center justify-center"><Loader2 className="w-8 h-8 text-secondary-label animate-spin" /></div>}>
                 <FeedView />
               </Suspense>
             </main>
 
             <main className={`flex-1 overflow-y-auto hide-scrollbar scroll-container pb-28 flex flex-col ${renderedTab === 'recommendations' ? 'flex' : 'hidden'}`}>
-              <Suspense fallback={<div className="flex-1 flex items-center justify-center"><Loader2 className="w-8 h-8 text-[var(--secondary-label)] animate-spin" /></div>}>
+              <Suspense fallback={<div className="flex-1 flex items-center justify-center"><Loader2 className="w-8 h-8 text-secondary-label animate-spin" /></div>}>
                 <RecommendationsView viewingUserId={viewingUserId} />
               </Suspense>
             </main>
 
             <main className={`flex-1 overflow-y-auto hide-scrollbar scroll-container flex flex-col ${renderedTab === 'add' ? 'flex' : 'hidden'}`}>
-              <Suspense fallback={<div className="flex-1 flex items-center justify-center"><Loader2 className="w-8 h-8 text-[var(--secondary-label)] animate-spin" /></div>}>
+              <Suspense fallback={<div className="flex-1 flex items-center justify-center"><Loader2 className="w-8 h-8 text-secondary-label animate-spin" /></div>}>
                 <AddView onAddItem={handleAddItem} initialType={activeSection?.type} />
               </Suspense>
             </main>
@@ -509,18 +562,22 @@ export default function App() {
           />
           
           {/* iOS Home Indicator (simulated for desktop view) */}
-          <div className="hidden sm:block absolute bottom-2 left-1/2 -translate-x-1/2 w-1/3 h-1 bg-[var(--label)] rounded-full z-50" />
+          <div className="hidden sm:block absolute bottom-2 left-1/2 -translate-x-1/2 w-1/3 h-1 bg-label rounded-full z-50" />
         </div>
 
-        <RecommendationModal
-          isOpen={isRecommendModalOpen}
-          onClose={() => setIsRecommendModalOpen(false)}
-          onSubmit={handleRecommendSubmit}
-        />
+        <Suspense fallback={null}>
+          <RecommendationModal
+            isOpen={isRecommendModalOpen}
+            onClose={() => setIsRecommendModalOpen(false)}
+            onSubmit={handleRecommendSubmit}
+          />
+        </Suspense>
 
         <AnimatePresence>
           {((!user && !viewingUserId) || isAuthModalOpen) && (
-            <AuthScreen />
+            <Suspense fallback={null}>
+              <AuthScreen />
+            </Suspense>
           )}
         </AnimatePresence>
       </div>

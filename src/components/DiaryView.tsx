@@ -32,7 +32,7 @@ const ReviewContent = ({ text, hasSpoilers }: { text: string, hasSpoilers: boole
     return (
       <button 
         onClick={() => { haptics.light(); setRevealed(true); }}
-        className="mt-3 text-sm text-[var(--secondary-label)] font-sans bg-[var(--tertiary-system-background)] px-3 py-1.5 rounded-lg w-fit flex items-center gap-2 hover:bg-[var(--secondary-system-background)] transition-colors"
+        className="mt-3 text-sm text-secondary-label font-sans bg-tertiary-system-background px-3 py-1.5 rounded-lg w-fit flex items-center gap-2 hover:bg-secondary-system-background transition-colors"
       >
         <EyeOff className="w-4 h-4" />
         This review contains spoilers. Tap to reveal.
@@ -42,7 +42,7 @@ const ReviewContent = ({ text, hasSpoilers }: { text: string, hasSpoilers: boole
 
   return (
     <div 
-      className="mt-3 text-sm text-[var(--label)] font-serif prose prose-sm dark:prose-invert max-w-none"
+      className="mt-3 text-sm text-label font-serif prose prose-sm dark:prose-invert max-w-none"
       dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(marked.parse(text) as string) }}
     />
   );
@@ -70,7 +70,7 @@ const DiaryViewComponent = ({ entries }: { entries: DiaryEntry[] }) => {
                 haptics.light();
                 setFilter(t as any);
               }}
-              className={`px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap capitalize transition-colors ${filter === t ? 'bg-[var(--label)] text-[var(--system-background)]' : 'bg-[var(--secondary-system-background)] dark:bg-[var(--tertiary-system-background)] text-[var(--secondary-label)] hover:text-[var(--label)]'}`}
+              className={`px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap capitalize transition-colors ${filter === t ? 'bg-label text-system-background' : 'bg-secondary-system-background  text-secondary-label hover:text-label'}`}
             >
               {t}
             </motion.button>
@@ -87,54 +87,54 @@ const DiaryViewComponent = ({ entries }: { entries: DiaryEntry[] }) => {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                  className="flex gap-4 items-start pb-4 mb-4 border-b border-[var(--separator)] group"
+                  className="flex gap-4 items-start pb-4 mb-4 border-b border-separator group"
                 >
                   <div className="w-12 shrink-0 pt-1 text-center">
-                    <div className="text-xs uppercase tracking-wider text-[var(--secondary-label)] font-semibold">
+                    <div className="text-xs uppercase tracking-wider text-secondary-label font-semibold">
                       {new Date(entry.date).toLocaleDateString('en-US', { month: 'short', timeZone: 'UTC' })}
                     </div>
-                    <div className="text-xl font-serif font-semibold text-[var(--label)] leading-none my-0.5">
+                    <div className="text-xl font-serif font-semibold text-label leading-none my-0.5">
                       {new Date(entry.date).getUTCDate()}
                     </div>
-                    <div className="text-xs text-[var(--secondary-label)] opacity-70">
+                    <div className="text-xs text-secondary-label opacity-70">
                       {new Date(entry.date).getUTCFullYear()}
                     </div>
                   </div>
 
-                  <div className="w-12 h-16 shrink-0 rounded-md overflow-hidden bg-[var(--secondary-system-background)] border border-[var(--separator)] shadow-sm">
+                  <div className="w-12 h-16 shrink-0 rounded-md overflow-hidden bg-secondary-system-background border border-separator shadow-sm">
                     <img src={entry.media.image || undefined} alt={entry.media.title} className="w-full h-full object-cover" referrerPolicy="no-referrer" loading="lazy" />
                   </div>
 
                   <div className="flex-1 min-w-0 pt-1">
-                    <h3 className="font-sans font-semibold text-base text-[var(--label)] truncate">
+                    <h3 className="font-sans font-semibold text-base text-label truncate">
                       {entry.media.title}
                     </h3>
-                    <p className="font-sans text-sm text-[var(--secondary-label)] truncate mb-1">
+                    <p className="font-sans text-sm text-secondary-label truncate mb-1">
                       {entry.media.subtitle}
                     </p>
                     {entry.rating > 0 && (
                       <div className="flex items-center gap-2">
-                        <div className="flex items-center gap-0.5 text-[var(--label)]">
+                        <div className="flex items-center gap-0.5 text-label">
                           {[1, 2, 3, 4, 5].map((star) => (
                             <div key={star} className="relative w-3.5 h-3.5">
-                              <Star className="absolute inset-0 w-3.5 h-3.5 text-[var(--separator)] fill-transparent" />
+                              <Star className="absolute inset-0 w-3.5 h-3.5 text-separator fill-transparent" />
                               <div 
                                 className="absolute inset-0 overflow-hidden" 
                                 style={{ width: entry.rating >= star ? '100%' : entry.rating >= star - 0.5 ? '50%' : '0%' }}
                               >
-                                <Star className="w-3.5 h-3.5 text-[var(--label)] fill-[var(--label)] max-w-none" />
+                                <Star className="w-3.5 h-3.5 text-label fill-label max-w-none" />
                               </div>
                             </div>
                           ))}
                         </div>
                         {entry.liked && <Heart className="w-3.5 h-3.5 text-red-500 fill-red-500" />}
-                        {entry.rewatched && <Repeat className="w-3.5 h-3.5 text-[var(--ios-blue)]" />}
+                        {entry.rewatched && <Repeat className="w-3.5 h-3.5 text-ios-blue" />}
                       </div>
                     )}
                     {entry.rating === 0 && (entry.liked || entry.rewatched) && (
                       <div className="flex items-center gap-2 mt-1">
                         {entry.liked && <Heart className="w-3.5 h-3.5 text-red-500 fill-red-500" />}
-                        {entry.rewatched && <Repeat className="w-3.5 h-3.5 text-[var(--ios-blue)]" />}
+                        {entry.rewatched && <Repeat className="w-3.5 h-3.5 text-ios-blue" />}
                       </div>
                     )}
                     {entry.reviewText && (
@@ -146,7 +146,7 @@ const DiaryViewComponent = ({ entries }: { entries: DiaryEntry[] }) => {
             );
           })}
           {sorted.length === 0 && (
-            <div className="text-center py-12 text-[var(--secondary-label)] text-sm font-sans">
+            <div className="text-center py-12 text-secondary-label text-sm font-sans">
               No diary entries found.
             </div>
           )}

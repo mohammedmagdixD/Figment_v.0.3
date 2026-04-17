@@ -159,6 +159,7 @@ export const UniversalDetailCard = React.memo(function UniversalDetailCard({ dat
           <img 
             src={(data.images.backdropUrl || data.images.posterUrl) || undefined} 
             alt={data.header.title} 
+            decoding="async"
             className={`w-full h-full object-cover ${data.images.backdropFallback ? 'opacity-80 blur-[40px] scale-125' : 'opacity-90'}`}
             referrerPolicy="no-referrer"
             onError={(e) => {
@@ -169,7 +170,7 @@ export const UniversalDetailCard = React.memo(function UniversalDetailCard({ dat
             }}
           />
         </div>
-        <div className="absolute inset-0 bg-gradient-to-t from-[var(--system-background)] via-[var(--system-background)]/20 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-system-background via-system-background/20 to-transparent" />
         
         {data.actionButton && (
           <a 
@@ -193,12 +194,13 @@ export const UniversalDetailCard = React.memo(function UniversalDetailCard({ dat
         )}
 
         <div className="absolute -bottom-16 left-6 flex items-end gap-4">
-          <div className={`w-28 ${(data.mediaType === 'song' || data.mediaType === 'music' || data.mediaType === 'podcast') ? 'aspect-square' : 'aspect-[2/3]'} rounded-xl overflow-hidden shadow-md shrink-0 bg-[var(--secondary-system-background)]`}>
+          <div className={`w-28 ${(data.mediaType === 'song' || data.mediaType === 'music' || data.mediaType === 'podcast') ? 'aspect-square' : 'aspect-[2/3]'} rounded-xl overflow-hidden shadow-md shrink-0 bg-secondary-system-background`}>
             <motion.img 
               layoutId={`poster-${data.id}`}
               onClick={() => setIsPosterExpanded(true)}
               src={data.images.posterUrl || undefined} 
               alt={data.header.title} 
+              decoding="async"
               className="w-full h-full object-cover cursor-pointer rounded-xl"
               referrerPolicy="no-referrer"
             />
@@ -209,19 +211,19 @@ export const UniversalDetailCard = React.memo(function UniversalDetailCard({ dat
       {/* 2. Primary Information Section */}
       <div className="pt-20 px-6">
         {(data.userStats?.rating !== undefined || data.userStats?.dateAdded) && (
-          <div className="flex items-center gap-6 mb-6 pb-6 border-b border-[var(--separator)]">
+          <div className="flex items-center gap-6 mb-6 pb-6 border-b border-separator">
             {data.userStats.rating !== undefined && (
               <div>
-                <div className="text-xs font-medium text-[var(--secondary-label)] uppercase tracking-wider mb-1.5">Your Rating</div>
-                <div className="flex items-center gap-1 text-[var(--label)]">
+                <div className="text-xs font-medium text-secondary-label uppercase tracking-wider mb-1.5">Your Rating</div>
+                <div className="flex items-center gap-1 text-label">
                   {[1, 2, 3, 4, 5].map((star) => (
                     <div key={star} className="relative w-4 h-4">
-                      <Star className="absolute inset-0 w-4 h-4 text-[var(--separator)] fill-transparent" />
+                      <Star className="absolute inset-0 w-4 h-4 text-separator fill-transparent" />
                       <div 
                         className="absolute inset-0 overflow-hidden" 
                         style={{ width: data.userStats!.rating! >= star ? '100%' : data.userStats!.rating! >= star - 0.5 ? '50%' : '0%' }}
                       >
-                        <Star className="w-4 h-4 text-[var(--label)] fill-[var(--label)] max-w-none" />
+                        <Star className="w-4 h-4 text-label fill-label max-w-none" />
                       </div>
                     </div>
                   ))}
@@ -230,9 +232,9 @@ export const UniversalDetailCard = React.memo(function UniversalDetailCard({ dat
             )}
             {data.userStats.dateAdded && (
               <div>
-                <div className="text-xs font-medium text-[var(--secondary-label)] uppercase tracking-wider mb-1.5">Date Added</div>
-                <div className="flex items-center gap-1.5 text-[var(--label)] font-medium text-sm">
-                  <Calendar className="w-4 h-4 text-[var(--secondary-label)]" />
+                <div className="text-xs font-medium text-secondary-label uppercase tracking-wider mb-1.5">Date Added</div>
+                <div className="flex items-center gap-1.5 text-label font-medium text-sm">
+                  <Calendar className="w-4 h-4 text-secondary-label" />
                   {new Date(data.userStats.dateAdded).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' })}
                 </div>
               </div>
@@ -242,26 +244,26 @@ export const UniversalDetailCard = React.memo(function UniversalDetailCard({ dat
 
         <div className="mb-4">
           <h2 
-            className="font-sans text-2xl font-bold leading-tight text-[var(--label)] mb-1 select-none"
+            className="font-sans text-2xl font-bold leading-tight text-label mb-1 select-none"
             style={{ WebkitTouchCallout: 'none' }}
             {...longPressProps}
           >
             {data.header.title}
           </h2>
           {data.header.subtitle && (
-            <p className="font-sans text-base text-[var(--secondary-label)]">
+            <p className="font-sans text-base text-secondary-label">
               {data.header.subtitle}
             </p>
           )}
         </div>
 
         {/* Stats & Metadata in a single line */}
-        <div className="flex flex-wrap items-center gap-2.5 mb-6 text-base font-medium text-[var(--secondary-label)]">
+        <div className="flex flex-wrap items-center gap-2.5 mb-6 text-base font-medium text-secondary-label">
           {data.metadata.map((meta, i) => (
             <div key={`meta-${i}`} className="flex items-center gap-2.5">
               {i > 0 && <span>•</span>}
               {meta.label === 'MPA' ? (
-                <span className="px-1.5 py-0.5 border border-[var(--secondary-label)] rounded-[4px] text-xs leading-none font-semibold uppercase tracking-wider">
+                <span className="px-1.5 py-0.5 border border-secondary-label rounded-[4px] text-xs leading-none font-semibold uppercase tracking-wider">
                   {meta.value}
                 </span>
               ) : (
@@ -286,32 +288,32 @@ export const UniversalDetailCard = React.memo(function UniversalDetailCard({ dat
         {streamingLinks && (
           <div className="flex items-center gap-4 mb-6">
             {streamingLinks.spotify && (
-              <a href={streamingLinks.spotify.url} target="_blank" rel="noopener noreferrer" className="text-[var(--secondary-label)] hover:text-[var(--label)] transition-colors">
+              <a href={streamingLinks.spotify.url} target="_blank" rel="noopener noreferrer" className="text-secondary-label hover:text-label transition-colors">
                 <SpotifyIcon className="w-6 h-6" />
               </a>
             )}
             {streamingLinks.appleMusic && (
-              <a href={streamingLinks.appleMusic.url} target="_blank" rel="noopener noreferrer" className="text-[var(--secondary-label)] hover:text-[var(--label)] transition-colors">
+              <a href={streamingLinks.appleMusic.url} target="_blank" rel="noopener noreferrer" className="text-secondary-label hover:text-label transition-colors">
                 <AppleMusicIcon className="w-6 h-6" />
               </a>
             )}
             {(streamingLinks.youtubeMusic || streamingLinks.youtube) && (
-              <a href={(streamingLinks.youtubeMusic || streamingLinks.youtube).url} target="_blank" rel="noopener noreferrer" className="text-[var(--secondary-label)] hover:text-[var(--label)] transition-colors">
+              <a href={(streamingLinks.youtubeMusic || streamingLinks.youtube).url} target="_blank" rel="noopener noreferrer" className="text-secondary-label hover:text-label transition-colors">
                 <YouTubeMusicIcon className="w-6 h-6" />
               </a>
             )}
             {streamingLinks.tidal && (
-              <a href={streamingLinks.tidal.url} target="_blank" rel="noopener noreferrer" className="text-[var(--secondary-label)] hover:text-[var(--label)] transition-colors">
+              <a href={streamingLinks.tidal.url} target="_blank" rel="noopener noreferrer" className="text-secondary-label hover:text-label transition-colors">
                 <TidalIcon className="w-6 h-6" />
               </a>
             )}
             {streamingLinks.deezer && (
-              <a href={streamingLinks.deezer.url} target="_blank" rel="noopener noreferrer" className="text-[var(--secondary-label)] hover:text-[var(--label)] transition-colors">
+              <a href={streamingLinks.deezer.url} target="_blank" rel="noopener noreferrer" className="text-secondary-label hover:text-label transition-colors">
                 <DeezerIcon className="w-6 h-6" />
               </a>
             )}
             {streamingLinks.soundcloud && (
-              <a href={streamingLinks.soundcloud.url} target="_blank" rel="noopener noreferrer" className="text-[var(--secondary-label)] hover:text-[var(--label)] transition-colors">
+              <a href={streamingLinks.soundcloud.url} target="_blank" rel="noopener noreferrer" className="text-secondary-label hover:text-label transition-colors">
                 <SoundCloudIcon className="w-6 h-6" />
               </a>
             )}
@@ -323,7 +325,7 @@ export const UniversalDetailCard = React.memo(function UniversalDetailCard({ dat
           <div className="mb-6">
             <div className="flex flex-wrap gap-3">
               {data.scrollableSections.watchProviders.map((provider: any, i: number) => (
-                <div key={i} className="w-[52px] h-[52px] rounded-[12px] overflow-hidden bg-[var(--secondary-system-background)] border border-[var(--separator)] flex items-center justify-center">
+                <div key={i} className="w-[52px] h-[52px] rounded-[12px] overflow-hidden bg-secondary-system-background border border-separator flex items-center justify-center">
                   <img src={provider.logo_path ? `https://image.tmdb.org/t/p/original${provider.logo_path}` : undefined} alt={provider.provider_name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                 </div>
               ))}
@@ -335,22 +337,22 @@ export const UniversalDetailCard = React.memo(function UniversalDetailCard({ dat
         {data.description && (
           <div className="mb-8">
             {data.tagline && (
-              <p className="font-sans text-base font-medium text-[var(--label)] mb-2">
+              <p className="font-sans text-base font-medium text-label mb-2">
                 {data.tagline}
               </p>
             )}
             {(data.mediaType === 'song' || data.mediaType === 'music') ? (
-              <p className="font-sans text-lg font-bold leading-relaxed text-[var(--label)]">
+              <p className="font-sans text-lg font-bold leading-relaxed text-label">
                 {data.description}
               </p>
             ) : (
               <div className="relative">
-                <p className={`font-sans text-base leading-relaxed text-[var(--secondary-label)] ${isDescriptionExpanded ? '' : 'line-clamp-3'}`}>
+                <p className={`font-sans text-base leading-relaxed text-secondary-label ${isDescriptionExpanded ? '' : 'line-clamp-3'}`}>
                   {data.description}
                 </p>
                 <button 
                   onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
-                  className="text-base font-medium text-[var(--ios-blue)] mt-1 flex items-center gap-1"
+                  className="text-base font-medium text-ios-blue mt-1 flex items-center gap-1"
                 >
                   {isDescriptionExpanded ? 'Less' : 'More'}
                   {isDescriptionExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
@@ -364,7 +366,7 @@ export const UniversalDetailCard = React.memo(function UniversalDetailCard({ dat
         {data.scrollableSections.genres && data.scrollableSections.genres.length > 0 && (
           <div className="flex flex-wrap gap-2 mb-8">
             {data.scrollableSections.genres.map((genre, i) => (
-              <span key={i} className="px-3 py-1 bg-[var(--secondary-system-background)] text-[var(--label)] rounded-full text-sm font-medium">
+              <span key={i} className="px-3 py-1 bg-secondary-system-background text-label rounded-full text-sm font-medium">
                 {genre}
               </span>
             ))}
@@ -374,24 +376,24 @@ export const UniversalDetailCard = React.memo(function UniversalDetailCard({ dat
         {/* 4. Cast */}
         {data.scrollableSections.cast && data.scrollableSections.cast.length > 0 && (
           <div className="mb-8">
-            <h3 className="font-sans text-xl font-bold text-[var(--label)] mb-4">Cast & Characters</h3>
+            <h3 className="font-sans text-xl font-bold text-label mb-4">Cast & Characters</h3>
             <div className="horizontal-scroll-container hide-scrollbar -mx-6 px-6 pb-4">
               {data.scrollableSections.cast.map((member, i) => (
                 <div key={i} className="flex flex-col items-center w-[88px] shrink-0 gap-2">
-                  <div className="w-[72px] h-[72px] rounded-full overflow-hidden bg-[var(--secondary-system-background)] border border-[var(--separator)]">
+                  <div className="w-[72px] h-[72px] rounded-full overflow-hidden bg-secondary-system-background border border-separator">
                     {member.imageUrl ? (
                       <img src={member.imageUrl || undefined} alt={member.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-2xl text-[var(--tertiary-label)]">
+                      <div className="w-full h-full flex items-center justify-center text-2xl text-tertiary-label">
                         {member.name.charAt(0)}
                       </div>
                     )}
                   </div>
                   <div className="text-center w-full">
-                    <p className="font-sans text-xs font-medium text-[var(--label)] leading-tight line-clamp-2 mb-0.5">
+                    <p className="font-sans text-xs font-medium text-label leading-tight line-clamp-2 mb-0.5">
                       {member.name}
                     </p>
-                    <p className="font-sans text-xs text-[var(--secondary-label)] leading-tight line-clamp-2">
+                    <p className="font-sans text-xs text-secondary-label leading-tight line-clamp-2">
                       {member.role}
                     </p>
                   </div>
@@ -404,13 +406,13 @@ export const UniversalDetailCard = React.memo(function UniversalDetailCard({ dat
         {/* 5. Related Lists */}
         {isLoadingRelated ? (
           <div className="flex justify-center py-8">
-            <Loader2 className="w-8 h-8 text-[var(--secondary-label)] animate-spin" />
+            <Loader2 className="w-8 h-8 text-secondary-label animate-spin" />
           </div>
         ) : relatedLists && relatedLists.length > 0 && (
           <div className="flex flex-col gap-8 mb-8">
             {relatedLists.map((list, i) => (
               <div key={i}>
-                <h3 className="font-sans text-xl font-bold text-[var(--label)] mb-4">{list.listTitle}</h3>
+                <h3 className="font-sans text-xl font-bold text-label mb-4">{list.listTitle}</h3>
                 <div className="horizontal-scroll-container hide-scrollbar snap-x snap-mandatory -mx-6 px-6 pb-4">
                   {list.items.map((item, index) => (
                     <MediaCard
@@ -434,7 +436,7 @@ export const UniversalDetailCard = React.memo(function UniversalDetailCard({ dat
           <div className="flex flex-col gap-8 mb-8">
             {data.scrollableSections.extras.map((extra, i) => (
               <div key={i}>
-                {extra.title && <h3 className="font-sans text-xl font-bold text-[var(--label)] mb-4">{extra.title}</h3>}
+                {extra.title && <h3 className="font-sans text-xl font-bold text-label mb-4">{extra.title}</h3>}
                 <div className="flex flex-col">
                   {extra.data}
                 </div>
@@ -464,7 +466,7 @@ export const UniversalDetailCard = React.memo(function UniversalDetailCard({ dat
             transition={{ type: 'spring', stiffness: 500, damping: 30 }}
             className="fixed bottom-12 left-0 right-0 z-[100] pointer-events-none flex justify-center"
           >
-            <div className="bg-[var(--secondary-system-background)]/90 backdrop-blur-xl border border-[var(--separator)] text-[var(--label)] px-4 py-2 rounded-full shadow-lg font-medium text-sm">
+            <div className="bg-secondary-system-background/90 backdrop-blur-xl border border-separator text-label px-4 py-2 rounded-full shadow-lg font-medium text-sm">
               Copied to clipboard
             </div>
           </motion.div>

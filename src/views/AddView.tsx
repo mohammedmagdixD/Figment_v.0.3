@@ -36,15 +36,15 @@ const HistoryItem: React.FC<{
   return (
     <div 
       {...longPressProps}
-      className="flex items-center justify-between py-3 px-2 hover:bg-[var(--tertiary-system-background)] transition-colors cursor-pointer group select-none"
+      className="flex items-center justify-between py-3 px-2 hover:bg-tertiary-system-background transition-colors cursor-pointer group select-none"
       onClick={onClick}
     >
       <div className="flex items-center gap-3 overflow-hidden">
-        <Clock className="w-4 h-4 text-[var(--secondary-label)] shrink-0" />
-        <span className="font-sans text-[var(--label)] truncate select-none">{item.query}</span>
+        <Clock className="w-4 h-4 text-secondary-label shrink-0" />
+        <span className="font-sans text-label truncate select-none">{item.query}</span>
       </div>
       <div className="flex items-center gap-2 shrink-0 pl-2">
-        <span className="text-xs font-medium px-3 py-1 rounded-full border border-[var(--separator)] bg-transparent text-[var(--secondary-label)] select-none">
+        <span className="text-xs font-medium px-3 py-1 rounded-full border border-separator bg-transparent text-secondary-label select-none">
           {MEDIA_TYPES.find(t => t.id === item.mediaType)?.label || item.mediaType}
         </span>
       </div>
@@ -113,9 +113,9 @@ export const AddView = React.memo(function AddView({ onAddItem, initialType }: {
   };
 
   return (
-    <div className="flex flex-col h-full bg-[var(--system-background)] dark:bg-[var(--secondary-system-background)]">
+    <div className="flex flex-col h-full bg-system-background">
       {/* Header / Search Bar Area */}
-      <div className="px-4 pt-4 pb-2 z-10 bg-[var(--system-background)] dark:bg-[var(--secondary-system-background)]">
+      <div className="px-4 pt-4 pb-2 z-10 bg-system-background">
         <div className="flex items-center">
           <AnimatePresence>
             {(isFocused || hasSearched) && (
@@ -131,7 +131,7 @@ export const AddView = React.memo(function AddView({ onAddItem, initialType }: {
                   setQuery('');
                   setResults([]);
                 }}
-                className="flex-shrink-0 h-9 flex items-center justify-center rounded-full bg-[var(--tertiary-system-background)] text-[var(--label)] overflow-hidden"
+                className="flex-shrink-0 h-9 flex items-center justify-center rounded-full bg-tertiary-system-background text-label overflow-hidden"
               >
                 <ArrowLeft className="w-4 h-4 shrink-0" />
               </motion.button>
@@ -140,7 +140,7 @@ export const AddView = React.memo(function AddView({ onAddItem, initialType }: {
           
           <div className="relative flex-1">
             <Search 
-              className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--secondary-label)] cursor-pointer" 
+              className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-secondary-label cursor-pointer" 
               onClick={() => {
                 inputRef.current?.blur();
                 handleSearch(query);
@@ -155,7 +155,7 @@ export const AddView = React.memo(function AddView({ onAddItem, initialType }: {
               onFocus={() => setIsFocused(true)}
               onBlur={() => setIsFocused(false)}
               onKeyDown={handleKeyDown}
-              className="w-full bg-[var(--tertiary-system-background)] border border-[var(--separator)] rounded-full py-2.5 pl-10 pr-4 text-sm font-sans text-[var(--label)] placeholder:text-[var(--secondary-label)] focus:outline-none focus:ring-2 focus:ring-[var(--label)]/10 transition-all shadow-sm"
+              className="w-full bg-tertiary-system-background border border-separator rounded-full py-2.5 pl-10 pr-4 text-sm font-sans text-label placeholder:text-secondary-label focus:outline-none focus:ring-2 focus:ring-label/10 transition-all shadow-sm"
             />
           </div>
         </div>
@@ -179,8 +179,8 @@ export const AddView = React.memo(function AddView({ onAddItem, initialType }: {
               }}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full whitespace-nowrap transition-all duration-300 ${
                 activeType === type.id
-                  ? 'bg-[var(--label)] text-[var(--system-background)] shadow-sm scale-105 ring-1 ring-[var(--label)] ring-offset-1 ring-offset-[var(--system-background)]'
-                  : 'bg-[var(--tertiary-system-background)] text-[var(--secondary-label)] hover:bg-[var(--secondary-system-background)] hover:scale-105'
+                  ? 'bg-label text-system-background shadow-sm scale-105 ring-1 ring-label ring-offset-1 ring-offset-system-background'
+                  : 'bg-tertiary-system-background text-secondary-label hover:bg-secondary-system-background hover:scale-105'
               }`}
             >
               <div className="[&>svg]:w-3.5 [&>svg]:h-3.5 flex items-center justify-center">
@@ -208,7 +208,7 @@ export const AddView = React.memo(function AddView({ onAddItem, initialType }: {
             >
               {history.length > 0 ? (
                 <div className="space-y-0">
-                  <h3 className="text-sm font-medium text-[var(--secondary-label)] mb-2 px-2">Recent Searches</h3>
+                  <h3 className="text-sm font-medium text-secondary-label mb-2 px-2">Recent Searches</h3>
                   {history.map((item) => (
                     <HistoryItem 
                       key={item.id}
@@ -222,7 +222,7 @@ export const AddView = React.memo(function AddView({ onAddItem, initialType }: {
                   ))}
                 </div>
               ) : (
-                <div className="flex flex-col items-center justify-center h-40 text-[var(--secondary-label)]">
+                <div className="flex flex-col items-center justify-center h-40 text-secondary-label">
                   <Search className="w-8 h-8 mb-3 opacity-50" />
                   <p className="text-sm font-medium">Search for {MEDIA_TYPES.find(t => t.id === activeType)?.label}</p>
                 </div>
@@ -239,27 +239,27 @@ export const AddView = React.memo(function AddView({ onAddItem, initialType }: {
               {results.map((item) => (
                 <div 
                   key={item.id} 
-                  className="flex items-center gap-4 py-3 px-2 border-b border-[var(--separator)] last:border-0 cursor-pointer hover:bg-[var(--tertiary-system-background)] transition-colors group"
+                  className="flex items-center gap-4 py-3 px-2 border-b border-separator last:border-0 cursor-pointer hover:bg-tertiary-system-background transition-colors group"
                   onClick={() => setDetailItem(item)}
                 >
-                  <div className={`relative shrink-0 overflow-hidden bg-[var(--secondary-system-background)] shadow-sm border border-[var(--separator)] ${
+                  <div className={`relative shrink-0 overflow-hidden bg-secondary-system-background shadow-sm border border-separator ${
                     (item.type === 'music' || item.type === 'song') ? 'w-[60px] h-[60px] rounded-full' : 'w-[60px] aspect-[2/3] rounded-lg'
                   }`}>
                     <img src={item.image || undefined} alt={item.title} className="w-full h-full object-cover" />
-                    <div className={`absolute inset-0 shadow-[inset_0_0_0_1px_rgba(0,0,0,0.05)] dark:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.05)] pointer-events-none ${
+                    <div className={`absolute inset-0 border border-separator/30 pointer-events-none ${
                       (item.type === 'music' || item.type === 'song') ? 'rounded-full' : 'rounded-lg'
                     }`} />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h4 className="font-sans font-semibold text-[var(--label)] truncate">{item.title}</h4>
-                    <p className="font-sans text-sm text-[var(--secondary-label)] truncate">{item.subtitle}</p>
+                    <h4 className="font-sans font-semibold text-label truncate">{item.title}</h4>
+                    <p className="font-sans text-sm text-secondary-label truncate">{item.subtitle}</p>
                   </div>
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
                       setSelectedItem(item);
                     }}
-                    className="p-2.5 bg-transparent border border-[var(--separator)] shadow-sm rounded-full text-[var(--label)] hover:bg-[var(--secondary-system-background)] transition-colors shrink-0"
+                    className="p-2.5 bg-transparent border border-separator shadow-sm rounded-full text-label hover:bg-secondary-system-background transition-colors shrink-0"
                   >
                     <Star className="w-4 h-4" />
                   </button>
@@ -268,12 +268,12 @@ export const AddView = React.memo(function AddView({ onAddItem, initialType }: {
               
               {isLoading && (
                 <div className="flex justify-center py-4">
-                  <div className="w-6 h-6 border-2 border-[var(--secondary-label)] border-t-transparent rounded-full animate-spin" />
+                  <div className="w-6 h-6 border-2 border-secondary-label border-t-transparent rounded-full animate-spin" />
                 </div>
               )}
               
               {!isLoading && results.length === 0 && hasSearched && (
-                <div className="flex flex-col items-center justify-center h-40 text-[var(--secondary-label)]">
+                <div className="flex flex-col items-center justify-center h-40 text-secondary-label">
                   <p className="text-sm font-medium">No results found</p>
                 </div>
               )}

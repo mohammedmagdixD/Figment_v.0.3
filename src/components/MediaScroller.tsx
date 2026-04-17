@@ -1,10 +1,11 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, lazy, Suspense } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ChevronRight, GripHorizontal, Plus, Play, Pause, ListPlus } from 'lucide-react';
-import { MediaDetailsModal } from './MediaDetailsModal';
-import { AddToAlbumModal } from './AddToAlbumModal';
 import { MediaCard } from './MediaCard';
 import { Album } from '../services/api';
+
+const MediaDetailsModal = lazy(() => import('./MediaDetailsModal').then(module => ({ default: module.MediaDetailsModal })));
+const AddToAlbumModal = lazy(() => import('./AddToAlbumModal').then(module => ({ default: module.AddToAlbumModal })));
 
 interface MediaScrollerProps {
   section: any;
@@ -84,13 +85,13 @@ export const MediaScroller = React.memo(function MediaScroller({ section, dragCo
         <div className="flex items-center gap-2">
           {dragControls && (
             <div 
-              className="cursor-grab active:cursor-grabbing text-[var(--secondary-label)] hover:text-[var(--label)] transition-colors p-1 -ml-1 touch-none"
+              className="cursor-grab active:cursor-grabbing text-secondary-label hover:text-label transition-colors p-1 -ml-1 touch-none"
               onPointerDown={(e) => dragControls.start(e)}
             >
               <GripHorizontal className="w-5 h-5" />
             </div>
           )}
-          <h2 className="font-serif text-xl font-semibold leading-relaxed text-[var(--label)]">
+          <h2 className="font-serif text-xl font-semibold leading-relaxed text-label">
             {section.title}
           </h2>
         </div>
@@ -98,12 +99,12 @@ export const MediaScroller = React.memo(function MediaScroller({ section, dragCo
           {onAddClick && (
             <button 
               onClick={onAddClick}
-              className="w-7 h-7 rounded-full bg-[var(--system-background)] flex items-center justify-center text-[var(--label)] hover:bg-black/5 dark:hover:bg-white/10 transition-colors active:scale-95"
+              className="w-7 h-7 rounded-full bg-system-background flex items-center justify-center text-label hover:bg-secondary-system-background transition-colors active:scale-95"
             >
               <Plus className="w-4 h-4" />
             </button>
           )}
-          <button className="text-[var(--secondary-label)] hover:text-[var(--label)] flex items-center font-sans text-base font-medium leading-relaxed active:opacity-70 transition-colors">
+          <button className="text-secondary-label hover:text-label flex items-center font-sans text-base font-medium leading-relaxed active:opacity-70 transition-colors">
             See All <ChevronRight className="w-4 h-4 ml-0.5" />
           </button>
         </div>
@@ -128,21 +129,25 @@ export const MediaScroller = React.memo(function MediaScroller({ section, dragCo
 
       <AnimatePresence>
         {selectedItem && (
-          <MediaDetailsModal 
-            item={{...selectedItem, type: section.type}} 
-            onClose={() => setSelectedItem(null)} 
-            onLogEpisode={onLogEpisode ? ((episode, rating, date, liked, rewatched) => onLogEpisode(episode, rating, date, liked, rewatched, selectedItem)) : undefined}
-            viewingUserId={viewingUserId}
-          />
+          <Suspense fallback={null}>
+            <MediaDetailsModal 
+              item={{...selectedItem, type: section.type}} 
+              onClose={() => setSelectedItem(null)} 
+              onLogEpisode={onLogEpisode ? ((episode, rating, date, liked, rewatched) => onLogEpisode(episode, rating, date, liked, rewatched, selectedItem)) : undefined}
+              viewingUserId={viewingUserId}
+            />
+          </Suspense>
         )}
         {addingToAlbumItem && onAddToAlbum && onCreateAlbum && (
-          <AddToAlbumModal
-            item={addingToAlbumItem}
-            albums={albums}
-            onClose={() => setAddingToAlbumItem(null)}
-            onAddToAlbum={onAddToAlbum}
-            onCreateAlbum={onCreateAlbum}
-          />
+          <Suspense fallback={null}>
+            <AddToAlbumModal
+              item={addingToAlbumItem}
+              albums={albums}
+              onClose={() => setAddingToAlbumItem(null)}
+              onAddToAlbum={onAddToAlbum}
+              onCreateAlbum={onCreateAlbum}
+            />
+          </Suspense>
         )}
       </AnimatePresence>
     </section>

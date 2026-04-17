@@ -151,7 +151,7 @@ export function AuthScreen() {
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-[var(--system-background)] dark:bg-[var(--secondary-system-background)] overflow-hidden flex flex-col">
+    <div className="fixed inset-0 z-50 bg-system-background  overflow-hidden flex flex-col">
       <AnimatePresence mode="wait">
         {view === 'initial' && (
           <motion.div
@@ -162,29 +162,29 @@ export function AuthScreen() {
             transition={springTransition}
             className="flex-1 flex flex-col items-center justify-center px-6"
           >
-            <h1 className="text-3xl font-serif font-bold text-[var(--label)] mb-2">Figment</h1>
-            <p className="text-[var(--secondary-label)] text-center mb-12">Your universal media library.</p>
+            <h1 className="text-3xl font-serif font-bold text-label mb-2">Figment</h1>
+            <p className="text-secondary-label text-center mb-12">Your universal media library.</p>
 
             <div className="w-full max-w-sm space-y-4">
               <button
                 onClick={() => handleOAuth('x')}
-                className="w-full flex items-center justify-center gap-3 py-3.5 px-4 bg-transparent border border-[var(--separator)] rounded-full text-[var(--label)] font-medium hover:bg-[var(--tertiary-system-background)] transition-colors"
+                className="w-full flex items-center justify-center gap-3 py-3.5 px-4 bg-transparent border border-separator rounded-full text-label font-medium hover:bg-tertiary-system-background transition-colors"
               >
                 <XIcon />
                 Continue with X
               </button>
               <button
                 onClick={() => handleOAuth('google')}
-                className="w-full flex items-center justify-center gap-3 py-3.5 px-4 bg-transparent border border-[var(--separator)] rounded-full text-[var(--label)] font-medium hover:bg-[var(--tertiary-system-background)] transition-colors"
+                className="w-full flex items-center justify-center gap-3 py-3.5 px-4 bg-transparent border border-separator rounded-full text-label font-medium hover:bg-tertiary-system-background transition-colors"
               >
                 <GoogleIcon />
                 Continue with Google
               </button>
 
               <div className="flex items-center gap-4 my-8">
-                <div className="flex-1 h-[1px] bg-[var(--separator)]" />
-                <span className="text-sm text-[var(--secondary-label)]">or</span>
-                <div className="flex-1 h-[1px] bg-[var(--separator)]" />
+                <div className="flex-1 h-[1px] bg-separator" />
+                <span className="text-sm text-secondary-label">or</span>
+                <div className="flex-1 h-[1px] bg-separator" />
               </div>
 
               <button
@@ -192,7 +192,7 @@ export function AuthScreen() {
                   setMode('signin');
                   setView('email_auth');
                 }}
-                className="w-full flex items-center justify-center gap-3 py-3.5 px-4 bg-[var(--label)] text-[var(--system-background)] rounded-full font-medium hover:opacity-90 transition-opacity"
+                className="w-full flex items-center justify-center gap-3 py-3.5 px-4 bg-label text-system-background rounded-full font-medium hover:opacity-90 transition-opacity"
               >
                 <Mail className="w-5 h-5" />
                 Sign in with Email
@@ -213,12 +213,12 @@ export function AuthScreen() {
           >
             <button 
               onClick={() => setView('initial')}
-              className="self-start p-2 -ml-2 mb-6 text-[var(--label)]"
+              className="self-start p-2 -ml-2 mb-6 text-label"
             >
               <ChevronLeft className="w-8 h-8" />
             </button>
 
-            <h2 className="text-3xl font-serif font-bold text-[var(--label)] mb-8">
+            <h2 className="text-3xl font-serif font-bold text-label mb-8">
               {mode === 'signin' ? 'Welcome back' : 'Create account'}
             </h2>
 
@@ -231,25 +231,25 @@ export function AuthScreen() {
 
             <form onSubmit={handleEmailAuth} className="flex flex-col gap-5 max-w-sm w-full mx-auto">
               <div className="relative">
-                <Mail className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--secondary-label)]" />
+                <Mail className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-secondary-label" />
                 <input
                   type="email"
                   placeholder="Email"
                   value={email}
                   onChange={e => setEmail(e.target.value)}
-                  className="w-full bg-[var(--tertiary-system-background)] border border-[var(--separator)] rounded-full py-4 pl-14 pr-5 text-[var(--label)] focus:outline-none focus:ring-2 focus:ring-ios-blue transition-all"
+                  className="w-full bg-tertiary-system-background border border-separator rounded-full py-4 pl-14 pr-5 text-label focus:outline-none focus:ring-2 focus:ring-ios-blue transition-all"
                   required
                 />
               </div>
 
               <div className="relative">
-                <Lock className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--secondary-label)]" />
+                <Lock className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-secondary-label" />
                 <input
                   type="password"
                   placeholder="Password"
                   value={password}
                   onChange={e => setPassword(e.target.value)}
-                  className="w-full bg-[var(--tertiary-system-background)] border border-[var(--separator)] rounded-full py-4 pl-14 pr-5 text-[var(--label)] focus:outline-none focus:ring-2 focus:ring-ios-blue transition-all"
+                  className="w-full bg-tertiary-system-background border border-separator rounded-full py-4 pl-14 pr-5 text-label focus:outline-none focus:ring-2 focus:ring-ios-blue transition-all"
                   required
                 />
               </div>
@@ -257,20 +257,20 @@ export function AuthScreen() {
               {mode === 'signup' && password.length > 0 && (
                 <div className="px-2 space-y-2 mt-2">
                   <div className="flex items-center gap-2 text-sm">
-                    {hasUppercase ? <CheckCircle2 className="w-4 h-4 text-green-500" /> : <Circle className="w-4 h-4 text-[var(--secondary-label)]" />}
-                    <span className={hasUppercase ? 'text-[var(--label)]' : 'text-[var(--secondary-label)]'}>Uppercase letter</span>
+                    {hasUppercase ? <CheckCircle2 className="w-4 h-4 text-green-500" /> : <Circle className="w-4 h-4 text-secondary-label" />}
+                    <span className={hasUppercase ? 'text-label' : 'text-secondary-label'}>Uppercase letter</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm">
-                    {hasLowercase ? <CheckCircle2 className="w-4 h-4 text-green-500" /> : <Circle className="w-4 h-4 text-[var(--secondary-label)]" />}
-                    <span className={hasLowercase ? 'text-[var(--label)]' : 'text-[var(--secondary-label)]'}>Lowercase letter</span>
+                    {hasLowercase ? <CheckCircle2 className="w-4 h-4 text-green-500" /> : <Circle className="w-4 h-4 text-secondary-label" />}
+                    <span className={hasLowercase ? 'text-label' : 'text-secondary-label'}>Lowercase letter</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm">
-                    {hasNumber ? <CheckCircle2 className="w-4 h-4 text-green-500" /> : <Circle className="w-4 h-4 text-[var(--secondary-label)]" />}
-                    <span className={hasNumber ? 'text-[var(--label)]' : 'text-[var(--secondary-label)]'}>Number</span>
+                    {hasNumber ? <CheckCircle2 className="w-4 h-4 text-green-500" /> : <Circle className="w-4 h-4 text-secondary-label" />}
+                    <span className={hasNumber ? 'text-label' : 'text-secondary-label'}>Number</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm">
-                    {hasSymbol ? <CheckCircle2 className="w-4 h-4 text-green-500" /> : <Circle className="w-4 h-4 text-[var(--secondary-label)]" />}
-                    <span className={hasSymbol ? 'text-[var(--label)]' : 'text-[var(--secondary-label)]'}>Special symbol</span>
+                    {hasSymbol ? <CheckCircle2 className="w-4 h-4 text-green-500" /> : <Circle className="w-4 h-4 text-secondary-label" />}
+                    <span className={hasSymbol ? 'text-label' : 'text-secondary-label'}>Special symbol</span>
                   </div>
                 </div>
               )}
@@ -288,7 +288,7 @@ export function AuthScreen() {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full bg-[var(--label)] text-[var(--system-background)] rounded-full py-4 font-medium hover:opacity-90 transition-opacity mt-4 disabled:opacity-50"
+                className="w-full bg-label text-system-background rounded-full py-4 font-medium hover:opacity-90 transition-opacity mt-4 disabled:opacity-50"
               >
                 {isLoading ? 'Please wait...' : (mode === 'signin' ? 'Sign In' : 'Create Account')}
               </button>
@@ -297,7 +297,7 @@ export function AuthScreen() {
                 <button
                   type="button"
                   onClick={() => setMode(mode === 'signin' ? 'signup' : 'signin')}
-                  className="text-[var(--secondary-label)] text-sm hover:text-[var(--label)] transition-colors"
+                  className="text-secondary-label text-sm hover:text-label transition-colors"
                 >
                   {mode === 'signin' ? "Don't have an account? Sign up" : "Already have an account? Sign in"}
                 </button>
@@ -318,15 +318,15 @@ export function AuthScreen() {
           >
             <button 
               onClick={() => setView('email_auth')}
-              className="self-start p-2 -ml-2 mb-6 text-[var(--label)]"
+              className="self-start p-2 -ml-2 mb-6 text-label"
             >
               <ChevronLeft className="w-8 h-8" />
             </button>
 
-            <h2 className="text-3xl font-serif font-bold text-[var(--label)] mb-4">
+            <h2 className="text-3xl font-serif font-bold text-label mb-4">
               Reset Password
             </h2>
-            <p className="text-[var(--secondary-label)] mb-8">
+            <p className="text-secondary-label mb-8">
               Enter your email address and we'll send you a magic link to reset your password.
             </p>
 
@@ -345,13 +345,13 @@ export function AuthScreen() {
 
             <form onSubmit={handleForgotPassword} className="flex flex-col gap-5 max-w-sm w-full mx-auto">
               <div className="relative">
-                <Mail className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--secondary-label)]" />
+                <Mail className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-secondary-label" />
                 <input
                   type="email"
                   placeholder="Email"
                   value={email}
                   onChange={e => setEmail(e.target.value)}
-                  className="w-full bg-[var(--tertiary-system-background)] border border-[var(--separator)] rounded-full py-4 pl-14 pr-5 text-[var(--label)] focus:outline-none focus:ring-2 focus:ring-ios-blue transition-all"
+                  className="w-full bg-tertiary-system-background border border-separator rounded-full py-4 pl-14 pr-5 text-label focus:outline-none focus:ring-2 focus:ring-ios-blue transition-all"
                   required
                 />
               </div>
@@ -359,7 +359,7 @@ export function AuthScreen() {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full bg-[var(--label)] text-[var(--system-background)] rounded-full py-4 font-medium hover:opacity-90 transition-opacity mt-4 disabled:opacity-50"
+                className="w-full bg-label text-system-background rounded-full py-4 font-medium hover:opacity-90 transition-opacity mt-4 disabled:opacity-50"
               >
                 {isLoading ? 'Sending...' : 'Send Magic Link'}
               </button>
@@ -379,16 +379,16 @@ export function AuthScreen() {
           >
             <button 
               onClick={() => setView('email_auth')}
-              className="self-start p-2 -ml-2 mb-6 text-[var(--label)]"
+              className="self-start p-2 -ml-2 mb-6 text-label"
             >
               <ChevronLeft className="w-8 h-8" />
             </button>
 
-            <h2 className="text-3xl font-serif font-bold text-[var(--label)] mb-4">
+            <h2 className="text-3xl font-serif font-bold text-label mb-4">
               Check your email
             </h2>
-            <p className="text-[var(--secondary-label)] mb-8">
-              We sent an 8-digit code to <span className="text-[var(--label)] font-medium">{email}</span>
+            <p className="text-secondary-label mb-8">
+              We sent an 8-digit code to <span className="text-label font-medium">{email}</span>
             </p>
 
             {error && (
@@ -409,13 +409,13 @@ export function AuthScreen() {
                   value={digit}
                   onChange={e => handleOtpChange(index, e.target.value)}
                   onKeyDown={e => handleOtpKeyDown(index, e)}
-                  className="w-10 h-12 text-center text-xl font-bold bg-[var(--tertiary-system-background)] border border-[var(--separator)] rounded-xl text-[var(--label)] focus:outline-none focus:ring-2 focus:ring-ios-blue transition-all"
+                  className="w-10 h-12 text-center text-xl font-bold bg-tertiary-system-background border border-separator rounded-xl text-label focus:outline-none focus:ring-2 focus:ring-ios-blue transition-all"
                 />
               ))}
             </div>
             
             {isLoading && (
-              <div className="mt-8 text-center text-[var(--secondary-label)]">
+              <div className="mt-8 text-center text-secondary-label">
                 Verifying...
               </div>
             )}

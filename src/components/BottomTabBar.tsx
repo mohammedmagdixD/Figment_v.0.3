@@ -44,11 +44,11 @@ export const BottomTabBar = React.memo(function BottomTabBar({ activeTab, onTabC
       <motion.div 
         layout
         transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
-        className="relative flex items-center gap-1.5 p-1.5 bg-[var(--secondary-system-background)]/80 backdrop-blur-2xl border border-[var(--separator)] shadow-sm dark:shadow-none rounded-full pointer-events-auto overflow-hidden"
+        className="relative flex items-center gap-1.5 p-1.5 bg-system-background/80 backdrop-blur-3xl border border-separator shadow-sm rounded-full pointer-events-auto overflow-hidden"
       >
         {/* The sliding active background pill */}
         <motion.div
-          className="absolute top-1.5 bottom-1.5 bg-[var(--label)] rounded-full z-0"
+          className="absolute top-1.5 bottom-1.5 bg-label rounded-full z-0"
           initial={false}
           animate={{ 
             left: pillLeft, 
@@ -76,7 +76,7 @@ export const BottomTabBar = React.memo(function BottomTabBar({ activeTab, onTabC
               <div className="flex items-center justify-center px-3 w-full h-full">
                 <Icon 
                   className={`w-5 h-5 shrink-0 transition-colors duration-300 ${
-                    isActive ? 'text-[var(--system-background)]' : 'text-[var(--secondary-label)]'
+                    isActive ? 'text-system-background' : 'text-secondary-label'
                   }`} 
                   strokeWidth={isActive ? 2.5 : 2}
                 />
@@ -93,7 +93,7 @@ export const BottomTabBar = React.memo(function BottomTabBar({ activeTab, onTabC
                   transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
                   className="overflow-hidden whitespace-nowrap flex items-center"
                 >
-                  <span className="text-sm font-semibold text-[var(--system-background)]">
+                  <span className="text-sm font-semibold text-system-background">
                     {tab.label}
                   </span>
                 </motion.div>

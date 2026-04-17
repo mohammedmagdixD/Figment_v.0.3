@@ -203,7 +203,7 @@ function baseMalAdapter(data: any, type: 'anime' | 'manga'): UniversalMediaData 
         ...(data.source ? [{
           type: 'source',
           title: 'Source Material',
-          data: <p className="font-sans text-sm text-[var(--secondary-label)]">Adapted from {data.source}</p>
+          data: <p className="font-sans text-sm text-secondary-label">Adapted from {data.source}</p>
         }] : [])
       ] : []
     }
@@ -347,7 +347,7 @@ function baseTmdbAdapter(data: any, item: any, type: 'movie' | 'tv'): UniversalM
                   e.stopPropagation();
                   haptics.light();
                 }}
-                className="shrink-0 text-xs font-medium bg-[var(--system-background)] border border-[var(--separator)] px-3 py-1.5 rounded-full hover:bg-[var(--tertiary-system-background)] text-[var(--label)] transition-colors"
+                className="shrink-0 text-xs font-medium bg-system-background border border-separator px-3 py-1.5 rounded-full hover:bg-tertiary-system-background text-label transition-colors"
               >
                 Rate
               </motion.button>
@@ -378,13 +378,13 @@ function PodcastEpisodesList({ episodes, item, onLogEpisode }: { episodes: any[]
   return (
     <>
       <div className="relative mb-4">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--secondary-label)]" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-secondary-label" />
         <input
           type="text"
           placeholder="Search episodes..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full bg-[var(--secondary-system-background)] border border-[var(--separator)] rounded-xl py-2 pl-9 pr-3 text-sm font-sans text-[var(--label)] placeholder:text-[var(--secondary-label)] focus:outline-none focus:ring-2 focus:ring-[var(--label)]/10 transition-all"
+          className="w-full bg-secondary-system-background border border-separator rounded-xl py-2 pl-9 pr-3 text-sm font-sans text-label placeholder:text-secondary-label focus:outline-none focus:ring-2 focus:ring-label/10 transition-all"
         />
       </div>
       {filteredEpisodes.map((ep: any, index: number) => (
@@ -405,7 +405,7 @@ function PodcastEpisodesList({ episodes, item, onLogEpisode }: { episodes: any[]
                 haptics.light();
                 onLogEpisode(ep);
               }}
-              className="shrink-0 text-xs font-medium bg-[var(--system-background)] border border-[var(--separator)] px-3 py-1.5 rounded-full hover:bg-[var(--tertiary-system-background)] text-[var(--label)] transition-colors"
+              className="shrink-0 text-xs font-medium bg-system-background border border-separator px-3 py-1.5 rounded-full hover:bg-tertiary-system-background text-label transition-colors"
             >
               Rate
             </motion.button>
@@ -573,7 +573,7 @@ export function mapItunesTrack(trackDetails: ITunesAudioDetails | null | undefin
           type: 'copyright',
           title: '',
           data: (
-            <div className="text-xs text-[var(--tertiary-label)] text-center mt-4 space-y-1">
+            <div className="text-xs text-tertiary-label text-center mt-4 space-y-1">
               {trackDetails?.country && <p>Country of Origin: {trackDetails.country}</p>}
               {trackDetails?.copyright && <p>{trackDetails.copyright}</p>}
             </div>

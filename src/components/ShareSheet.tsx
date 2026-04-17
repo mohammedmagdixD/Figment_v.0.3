@@ -98,7 +98,7 @@ export function ShareSheet({ isOpen, onClose, profile }: ShareSheetProps) {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={onClose}
-              className="fixed inset-0 z-[60] bg-black/60 backdrop-blur-md"
+              className="fixed inset-0 z-[60] bg-overlay backdrop-blur-md"
             />
             
             {/* Sheet */}
@@ -109,7 +109,7 @@ export function ShareSheet({ isOpen, onClose, profile }: ShareSheetProps) {
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
               className="fixed bottom-0 left-0 right-0 z-[70] px-4 pb-safe-bottom"
             >
-              <div className="bg-[var(--secondary-system-background)]/90 backdrop-blur-3xl rounded-[32px] overflow-hidden shadow-2xl border border-[var(--separator)] mb-4">
+              <div className="bg-secondary-system-background/90 backdrop-blur-3xl rounded-[32px] overflow-hidden shadow-2xl border border-separator mb-4">
                 
                 {/* 1. Hero Section */}
                 <div className="relative w-full h-32 bg-black shrink-0">
@@ -121,7 +121,7 @@ export function ShareSheet({ isOpen, onClose, profile }: ShareSheetProps) {
                       referrerPolicy="no-referrer"
                     />
                   </div>
-                  <div className="absolute inset-0 bg-gradient-to-t from-[var(--secondary-system-background)]/90 via-[var(--secondary-system-background)]/40 to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-secondary-system-background/90 via-secondary-system-background/40 to-transparent" />
                   
                   {/* Handle */}
                   <div className="absolute top-4 left-0 right-0 flex justify-center z-10">
@@ -129,7 +129,7 @@ export function ShareSheet({ isOpen, onClose, profile }: ShareSheetProps) {
                   </div>
 
                   <div className="absolute -bottom-14 left-6 flex items-end gap-4">
-                    <div className="w-28 h-28 rounded-[24px] overflow-hidden shadow-lg shrink-0 bg-[var(--secondary-system-background)] border border-[var(--separator)]">
+                    <div className="w-28 h-28 rounded-[24px] overflow-hidden shadow-lg shrink-0 bg-secondary-system-background border border-separator">
                       <img 
                         src={profile.avatar} 
                         alt={profile.name} 
@@ -143,10 +143,10 @@ export function ShareSheet({ isOpen, onClose, profile }: ShareSheetProps) {
                 {/* 2. Primary Information Section */}
                 <div className="pt-16 px-6 pb-6">
                   <div className="mb-8">
-                    <h2 className="font-sans text-2xl font-bold leading-tight text-[var(--label)] mb-1">
+                    <h2 className="font-sans text-2xl font-bold leading-tight text-label mb-1">
                       {profile.name}
                     </h2>
-                    <p className="font-sans text-base text-[var(--secondary-label)]">
+                    <p className="font-sans text-base text-secondary-label">
                       {profile.handle}
                     </p>
                   </div>
@@ -158,7 +158,7 @@ export function ShareSheet({ isOpen, onClose, profile }: ShareSheetProps) {
                         haptics.medium();
                         setShowQRCode(true);
                       }}
-                      className="flex-1 flex items-center justify-center gap-2 py-3.5 bg-[var(--label)] text-[var(--system-background)] rounded-xl font-bold shadow-md active:scale-[0.98] transition-transform"
+                      className="flex-1 flex items-center justify-center gap-2 py-3.5 bg-label text-system-background rounded-xl font-bold shadow-md active:scale-[0.98] transition-transform"
                     >
                       <QrCode className="w-5 h-5" />
                       QR Code
@@ -166,7 +166,7 @@ export function ShareSheet({ isOpen, onClose, profile }: ShareSheetProps) {
 
                     <button
                       onClick={handleCopy}
-                      className="flex-1 flex items-center justify-center gap-2 py-3.5 bg-[var(--tertiary-system-background)] text-[var(--label)] rounded-xl font-bold shadow-sm border border-[var(--separator)] active:scale-[0.98] transition-transform"
+                      className="flex-1 flex items-center justify-center gap-2 py-3.5 bg-tertiary-system-background text-label rounded-xl font-bold shadow-sm border border-separator active:scale-[0.98] transition-transform"
                     >
                       {isCopied ? <Check className="w-5 h-5" /> : <Copy className="w-5 h-5" />}
                       {isCopied ? 'Copied!' : 'Copy Link'}
@@ -175,7 +175,7 @@ export function ShareSheet({ isOpen, onClose, profile }: ShareSheetProps) {
 
                   {/* Socials */}
                   <div className="mb-2">
-                    <h3 className="font-sans text-xl font-bold text-[var(--label)] mb-4">Share via</h3>
+                    <h3 className="font-sans text-xl font-bold text-label mb-4">Share via</h3>
                     <div className="horizontal-scroll-container hide-scrollbar -mx-6 px-6 pb-2 flex gap-4">
                       {socialOptions.map((option) => (
                         <div key={option.name} className="flex flex-col items-center w-[72px] shrink-0 gap-2">
@@ -187,12 +187,12 @@ export function ShareSheet({ isOpen, onClose, profile }: ShareSheetProps) {
                             whileTap={{ scale: 0.95 }}
                             transition={{ type: "spring", stiffness: 600, damping: 35 }}
                             onClick={() => haptics.light()}
-                            className={`w-[60px] h-[60px] flex items-center justify-center rounded-full bg-[var(--secondary-system-background)] border border-[var(--separator)] shadow-sm transition-colors duration-300 text-[var(--label)] ${option.hoverClass}`}
+                            className={`w-[60px] h-[60px] flex items-center justify-center rounded-full bg-secondary-system-background border border-separator shadow-sm transition-colors duration-300 text-label ${option.hoverClass}`}
                             aria-label={option.name}
                           >
                             {option.icon}
                           </motion.a>
-                          <span className="text-xs font-medium text-[var(--secondary-label)] text-center leading-tight">
+                          <span className="text-xs font-medium text-secondary-label text-center leading-tight">
                             {option.name}
                           </span>
                         </div>
@@ -205,7 +205,7 @@ export function ShareSheet({ isOpen, onClose, profile }: ShareSheetProps) {
               {/* Cancel Button */}
               <button 
                 onClick={onClose}
-                className="w-full py-4 mb-4 bg-[var(--secondary-system-background)]/90 backdrop-blur-3xl border border-[var(--separator)] rounded-[24px] text-[var(--label)] text-lg font-semibold shadow-xl active:scale-[0.98] transition-transform"
+                className="w-full py-4 mb-4 bg-secondary-system-background/90 backdrop-blur-3xl border border-separator rounded-[24px] text-label text-lg font-semibold shadow-xl active:scale-[0.98] transition-transform"
               >
                 Cancel
               </button>
@@ -221,21 +221,21 @@ export function ShareSheet({ isOpen, onClose, profile }: ShareSheetProps) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/60 backdrop-blur-xl"
+            className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-overlay backdrop-blur-xl"
           >
             <motion.div
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className="relative w-full max-w-sm bg-[var(--secondary-system-background)]/80 backdrop-blur-3xl border border-white/10 rounded-[40px] p-8 shadow-2xl flex flex-col items-center"
+              className="relative w-full max-w-sm bg-secondary-system-background/80 backdrop-blur-3xl border border-separator/50 rounded-[40px] p-8 shadow-2xl flex flex-col items-center"
             >
               <button
                 onClick={() => {
                   haptics.light();
                   setShowQRCode(false);
                 }}
-                className="absolute top-6 right-6 p-2 rounded-full bg-white/10 hover:bg-white/20 text-[var(--label)] transition-colors"
+                className="absolute top-6 right-6 p-2 rounded-full bg-tertiary-system-background hover:bg-quaternary-system-background text-label transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -249,8 +249,8 @@ export function ShareSheet({ isOpen, onClose, profile }: ShareSheetProps) {
                     className="relative w-full h-full rounded-full object-cover border-2 border-white/20 shadow-xl"
                   />
                 </div>
-                <h3 className="text-xl font-bold text-[var(--label)]">{profile.name}</h3>
-                <p className="text-[var(--secondary-label)] font-medium text-sm">{profile.handle}</p>
+                <h3 className="text-xl font-bold text-label">{profile.name}</h3>
+                <p className="text-secondary-label font-medium text-sm">{profile.handle}</p>
               </div>
 
               <div className="p-6 bg-white rounded-[32px] shadow-inner mb-8">
@@ -273,7 +273,7 @@ export function ShareSheet({ isOpen, onClose, profile }: ShareSheetProps) {
 
               <button
                 onClick={handleDownloadQR}
-                className="w-full flex items-center justify-center gap-2 py-4 bg-[var(--label)] text-[var(--system-background)] rounded-2xl font-bold shadow-lg active:scale-[0.98] transition-transform"
+                className="w-full flex items-center justify-center gap-2 py-4 bg-label text-system-background rounded-2xl font-bold shadow-lg active:scale-[0.98] transition-transform"
               >
                 <Download className="w-5 h-5" />
                 Download QR Code

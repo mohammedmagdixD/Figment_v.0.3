@@ -49,7 +49,7 @@ export function ProfileHeaderSocials({ socials }: ProfileHeaderSocialsProps) {
               href={getUrl(social)}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center justify-center text-[var(--label)] hover:opacity-70 transition-opacity"
+              className="flex items-center justify-center text-label hover:opacity-70 transition-opacity"
             >
               <SocialIcon icon={Icon} className="w-7 h-7" />
             </a>
@@ -58,7 +58,7 @@ export function ProfileHeaderSocials({ socials }: ProfileHeaderSocialsProps) {
         {showMore && (
           <button
             onClick={() => setIsMoreModalOpen(true)}
-            className="flex items-center justify-center text-[var(--label)] hover:opacity-70 transition-opacity"
+            className="flex items-center justify-center text-label hover:opacity-70 transition-opacity"
           >
             <DotsThree weight="bold" className="w-7 h-7" />
           </button>

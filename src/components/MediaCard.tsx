@@ -87,11 +87,11 @@ const MediaCardComponent = ({
       className={`snap-start card-container flex flex-col gap-2 group cursor-pointer ${getAspectRatioClass(sectionType)}`}
       onClick={() => onItemClick(item)}
     >
-      <div className="relative overflow-hidden rounded-xl bg-[var(--secondary-system-background)] shadow-sm border border-[var(--separator)] card-image">
+      <div className="relative overflow-hidden rounded-xl bg-secondary-system-background shadow-sm border border-separator card-image">
         
         {/* Skeleton Placeholder */}
         {!imageUrl && (
-          <div className="absolute inset-0 bg-[var(--secondary-system-background)] animate-pulse" />
+          <div className="absolute inset-0 bg-secondary-system-background animate-pulse" />
         )}
 
         {/* Image */}
@@ -100,21 +100,22 @@ const MediaCardComponent = ({
             src={imageUrl} 
             alt={title}
             loading={isPriority ? "eager" : "lazy"}
+            decoding="async"
             className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
             referrerPolicy="no-referrer"
           />
         ) : (
-          <div className="absolute inset-0 flex items-center justify-center bg-[var(--secondary-system-background)] p-4 text-center">
-            <span className="font-serif text-2xl text-[var(--secondary-label)] opacity-50">
+          <div className="absolute inset-0 flex items-center justify-center bg-secondary-system-background p-4 text-center">
+            <span className="font-serif text-2xl text-secondary-label opacity-50">
               {title ? title.charAt(0).toUpperCase() : '?'}
             </span>
           </div>
         )}
         
         {/* Subtle inner shadow for depth */}
-        <div className="absolute inset-0 shadow-[inset_0_0_0_1px_rgba(0,0,0,0.05)] dark:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.05)] pointer-events-none rounded-xl" />
+        <div className="absolute inset-0 shadow-[inset_0_0_0_1px_rgba(0,0,0,0.05)] pointer-events-none rounded-xl" />
         {/* Hover overlay */}
-        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 dark:group-hover:bg-white/10 transition-colors duration-300" />
+        <div className="absolute inset-0 bg-transparent group-hover:bg-black/20 transition-colors duration-300 pointer-events-none z-10" />
         
         {showPlayButton && (
           <button
@@ -144,11 +145,11 @@ const MediaCardComponent = ({
         )}
       </div>
       <div className="w-full">
-        <h3 className="font-sans text-base font-semibold leading-tight text-[var(--label)] card-text-truncate">
+        <h3 className="font-sans text-base font-semibold leading-tight text-label card-text-truncate">
           {title}
         </h3>
         {subtitle && (
-          <p className="font-sans text-sm font-medium leading-relaxed text-[var(--secondary-label)] card-text-truncate mt-0.5">
+          <p className="font-sans text-sm font-medium leading-relaxed text-secondary-label card-text-truncate mt-0.5">
             {subtitle}
           </p>
         )}

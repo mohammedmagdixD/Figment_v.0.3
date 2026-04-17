@@ -38,7 +38,7 @@ export const Header = React.memo(function Header({ profile, isOwnProfile = true,
                 whileTap={{ scale: 0.95 }}
                 transition={{ type: "spring", stiffness: 600, damping: 35 }}
                 onClick={handleShare}
-                className="p-2.5 bg-[var(--secondary-system-background)]/70 backdrop-blur-md border border-[var(--separator)] shadow-sm rounded-full text-[var(--label)] hover:bg-[var(--secondary-system-background)]/90 transition-colors"
+                className="p-2.5 bg-secondary-system-background/70 backdrop-blur-md border border-separator shadow-sm rounded-full text-label hover:bg-secondary-system-background/90 transition-colors"
               >
                 <Share className="w-4 h-4" />
               </motion.button>
@@ -50,7 +50,7 @@ export const Header = React.memo(function Header({ profile, isOwnProfile = true,
                   haptics.light();
                   onAuthClick?.();
                 }}
-                className="p-2.5 bg-[var(--secondary-system-background)]/70 backdrop-blur-md border border-[var(--separator)] shadow-sm rounded-full text-[var(--label)] hover:bg-[var(--secondary-system-background)]/90 transition-colors"
+                className="p-2.5 bg-secondary-system-background/70 backdrop-blur-md border border-separator shadow-sm rounded-full text-label hover:bg-secondary-system-background/90 transition-colors"
               >
                 <LogIn className="w-4 h-4" />
               </motion.button>
@@ -62,7 +62,7 @@ export const Header = React.memo(function Header({ profile, isOwnProfile = true,
                 whileTap={{ scale: 0.95 }}
                 transition={{ type: "spring", stiffness: 600, damping: 35 }}
                 onClick={handleShare}
-                className="p-2.5 bg-[var(--secondary-system-background)]/70 backdrop-blur-md border border-[var(--separator)] shadow-sm rounded-full text-[var(--label)] hover:bg-[var(--secondary-system-background)]/90 transition-colors"
+                className="p-2.5 bg-secondary-system-background/70 backdrop-blur-md border border-separator shadow-sm rounded-full text-label hover:bg-secondary-system-background/90 transition-colors"
               >
                 <Share className="w-4 h-4" />
               </motion.button>
@@ -74,7 +74,7 @@ export const Header = React.memo(function Header({ profile, isOwnProfile = true,
                   haptics.light();
                   setIsActionSheetOpen(true);
                 }}
-                className="p-2.5 bg-[var(--secondary-system-background)]/70 backdrop-blur-md border border-[var(--separator)] shadow-sm rounded-full text-[var(--label)] hover:bg-[var(--secondary-system-background)]/90 transition-colors"
+                className="p-2.5 bg-secondary-system-background/70 backdrop-blur-md border border-separator shadow-sm rounded-full text-label hover:bg-secondary-system-background/90 transition-colors"
               >
                 <MoreHorizontal className="w-4 h-4" />
               </motion.button>
@@ -101,7 +101,7 @@ export const Header = React.memo(function Header({ profile, isOwnProfile = true,
             initial={{ y: 10, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.1 }}
-            className="mt-5 font-serif text-3xl font-bold leading-tight text-[var(--label)] tracking-tight"
+            className="mt-5 font-serif text-3xl font-bold leading-tight text-label tracking-tight"
           >
             {profile.name}
           </motion.h1>
@@ -110,7 +110,7 @@ export const Header = React.memo(function Header({ profile, isOwnProfile = true,
             initial={{ y: 10, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.15 }}
-            className="font-sans text-base font-medium leading-relaxed text-[var(--secondary-label)] mt-1"
+            className="font-sans text-base font-medium leading-relaxed text-secondary-label mt-1"
           >
             {profile.handle}
           </motion.p>
@@ -119,7 +119,7 @@ export const Header = React.memo(function Header({ profile, isOwnProfile = true,
             initial={{ y: 10, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.2 }}
-            className="mt-4 font-sans text-base font-medium leading-relaxed text-[var(--secondary-label)] opacity-80 max-w-[290px]"
+            className="mt-4 font-sans text-base font-medium leading-relaxed text-secondary-label opacity-80 max-w-[290px]"
           >
             {profile.bio}
           </motion.p>
@@ -144,7 +144,7 @@ export const Header = React.memo(function Header({ profile, isOwnProfile = true,
                 haptics.medium();
                 onRecommendClick?.();
               }}
-              className="mt-8 flex items-center gap-2 px-6 py-3 bg-[var(--label)] text-[var(--system-background)] rounded-full font-medium shadow-md hover:opacity-90 transition-opacity"
+              className="mt-8 flex items-center gap-2 px-6 py-3 bg-label text-system-background rounded-full font-medium shadow-md hover:opacity-90 transition-opacity"
             >
               <Sparkles className="w-4 h-4" />
               Recommend
@@ -161,7 +161,7 @@ export const Header = React.memo(function Header({ profile, isOwnProfile = true,
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsActionSheetOpen(false)}
-              className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm"
+              className="fixed inset-0 z-50 bg-overlay backdrop-blur-sm"
             />
             <motion.div
               initial={{ y: '100%' }}
@@ -170,8 +170,8 @@ export const Header = React.memo(function Header({ profile, isOwnProfile = true,
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
               className="fixed bottom-0 left-0 right-0 z-50 px-4 pb-safe-bottom"
             >
-              <div className="bg-[var(--secondary-system-background)]/90 backdrop-blur-xl rounded-2xl mb-2 overflow-hidden">
-                <button className="w-full py-4 text-[var(--label)] text-lg font-medium border-b border-[var(--separator)] hover:bg-[var(--tertiary-system-background)] transition-colors">
+              <div className="bg-secondary-system-background/90 backdrop-blur-xl rounded-2xl mb-2 overflow-hidden">
+                <button className="w-full py-4 text-label text-lg font-medium border-b border-separator hover:bg-tertiary-system-background transition-colors">
                   Connections
                 </button>
                 <button 
@@ -180,14 +180,14 @@ export const Header = React.memo(function Header({ profile, isOwnProfile = true,
                     setIsActionSheetOpen(false);
                     setIsManageLinksOpen(true);
                   }}
-                  className="w-full py-4 text-[var(--label)] text-lg font-medium border-b border-[var(--separator)] hover:bg-[var(--tertiary-system-background)] transition-colors"
+                  className="w-full py-4 text-label text-lg font-medium border-b border-separator hover:bg-tertiary-system-background transition-colors"
                 >
                   Links
                 </button>
-                <button className="w-full py-4 text-[var(--label)] text-lg font-medium border-b border-[var(--separator)] hover:bg-[var(--tertiary-system-background)] transition-colors">
+                <button className="w-full py-4 text-label text-lg font-medium border-b border-separator hover:bg-tertiary-system-background transition-colors">
                   Privacy
                 </button>
-                <button className="w-full py-4 text-[var(--label)] text-lg font-medium border-b border-[var(--separator)] hover:bg-[var(--tertiary-system-background)] transition-colors">
+                <button className="w-full py-4 text-label text-lg font-medium border-b border-separator hover:bg-tertiary-system-background transition-colors">
                   Settings
                 </button>
                 <button 
@@ -196,14 +196,14 @@ export const Header = React.memo(function Header({ profile, isOwnProfile = true,
                     signOut();
                     setIsActionSheetOpen(false);
                   }}
-                  className="w-full py-4 text-red-500 text-lg font-medium hover:bg-[var(--tertiary-system-background)] transition-colors"
+                  className="w-full py-4 text-red-500 text-lg font-medium hover:bg-tertiary-system-background transition-colors"
                 >
                   Log out
                 </button>
               </div>
               <button 
                 onClick={() => setIsActionSheetOpen(false)}
-                className="w-full py-4 mb-4 bg-[var(--secondary-system-background)]/90 backdrop-blur-xl rounded-2xl text-[var(--label)] text-lg font-semibold hover:bg-[var(--tertiary-system-background)] transition-colors"
+                className="w-full py-4 mb-4 bg-secondary-system-background/90 backdrop-blur-xl rounded-2xl text-label text-lg font-semibold hover:bg-tertiary-system-background transition-colors"
               >
                 Cancel
               </button>

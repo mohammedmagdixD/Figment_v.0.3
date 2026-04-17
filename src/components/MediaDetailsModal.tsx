@@ -129,7 +129,7 @@ export const MediaDetailsModal = React.memo(function MediaDetailsModal({ item, o
 
   const handleLogEpisode = () => {
     haptics.success();
-    onLogEpisode?.(loggingEpisode!, rating, date, liked, rewatched);
+    onLogEpisode?.(loggingEpisode!, rating, date, liked, rewatched, item);
     setLoggingEpisode(null);
     onClose();
   };
@@ -186,7 +186,7 @@ export const MediaDetailsModal = React.memo(function MediaDetailsModal({ item, o
     if (isLoading) {
       return (
         <div className="flex justify-center items-center h-64">
-          <Loader2 className="w-8 h-8 text-gray dark:text-ios-gray-1 animate-spin" />
+          <Loader2 className="w-8 h-8 text-secondary-label animate-spin" />
         </div>
       );
     }
@@ -212,7 +212,7 @@ export const MediaDetailsModal = React.memo(function MediaDetailsModal({ item, o
     }
 
     if (!normalizedData) {
-      return <div className="p-6 text-center text-gray dark:text-ios-gray-1">Failed to load details.</div>;
+      return <div className="p-6 text-center text-secondary-label">Failed to load details.</div>;
     }
 
     // Add user stats if available
@@ -229,14 +229,14 @@ export const MediaDetailsModal = React.memo(function MediaDetailsModal({ item, o
           <div className="absolute top-4 left-4 right-4 flex justify-between z-50 pt-safe-top">
             <button 
               onClick={handleClose}
-              className="p-2.5 bg-[var(--system-background)]/70 backdrop-blur-md rounded-full text-[var(--label)] hover:bg-[var(--secondary-system-background)]/80 transition-colors"
+              className="p-2.5 bg-system-background/70 backdrop-blur-md rounded-full text-label hover:bg-secondary-system-background/80 transition-colors"
             >
               <ArrowLeft className="w-4 h-4" />
             </button>
             {onRateClick && (
               <button 
                 onClick={onRateClick}
-                className="p-2.5 bg-[var(--system-background)]/70 backdrop-blur-md rounded-full text-[var(--label)] hover:bg-[var(--secondary-system-background)]/80 transition-colors"
+                className="p-2.5 bg-system-background/70 backdrop-blur-md rounded-full text-label hover:bg-secondary-system-background/80 transition-colors"
               >
                 <Star className="w-4 h-4" />
               </button>
@@ -261,7 +261,7 @@ export const MediaDetailsModal = React.memo(function MediaDetailsModal({ item, o
               onClick={() => {
                 if (sheetState === 'half') handleClose();
               }}
-              className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+              className="absolute inset-0 bg-overlay backdrop-blur-sm"
             />
           )}
           
@@ -282,7 +282,7 @@ export const MediaDetailsModal = React.memo(function MediaDetailsModal({ item, o
             dragElastic={0.2}
             onDragEnd={fullScreen ? undefined : handleDragEnd}
             onClick={(e) => e.stopPropagation()}
-            className={`relative w-full bg-[var(--system-background)] shadow-2xl overflow-hidden flex flex-col ${
+            className={`relative w-full bg-system-background shadow-2xl overflow-hidden flex flex-col ${
               fullScreen 
                 ? 'h-full max-w-full rounded-none' 
                 : 'max-w-md rounded-t-[32px] sm:rounded-3xl h-[95vh] sm:h-[85vh] sm:max-h-[850px]'
@@ -294,12 +294,12 @@ export const MediaDetailsModal = React.memo(function MediaDetailsModal({ item, o
                 className="absolute top-0 left-0 right-0 z-50 flex justify-center pt-3 pb-3 cursor-grab active:cursor-grabbing touch-none"
                 onPointerDown={(e) => dragControls.start(e)}
               >
-                <div className="w-12 h-1.5 bg-[var(--tertiary-label)] rounded-full" />
+                <div className="w-12 h-1.5 bg-tertiary-label rounded-full" />
               </div>
             )}
 
             <div 
-              className={`flex-1 hide-scrollbar overlay-content ${sheetState === 'full' || fullScreen ? 'overflow-y-auto' : 'overflow-hidden'}`}
+              className={`flex-1 hide-scrollbar overlay-content ${sheetState === 'full' || fullScreen ? 'overflow-y-auto' : 'overflow-hidden touch-none'}`}
               onPointerDown={(e) => {
                 if (!fullScreen && sheetState === 'half') {
                   dragControls.start(e);

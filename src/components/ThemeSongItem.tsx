@@ -142,7 +142,7 @@ export const ThemeSongItem: React.FC<ThemeSongItemProps> = ({ themeString }) => 
       }
       rightContent={
         !songData?.previewUrl && !isLoading ? (
-          <div className="text-xs font-medium text-[var(--tertiary-label)] uppercase tracking-wider px-2 py-1 bg-[var(--tertiary-system-background)] rounded-sm">
+          <div className="text-xs font-medium text-tertiary-label uppercase tracking-wider px-2 py-1 bg-tertiary-system-background rounded-sm">
             No Preview
           </div>
         ) : undefined

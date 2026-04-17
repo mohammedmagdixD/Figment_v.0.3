@@ -91,10 +91,35 @@ export async function getUserShelves(userId: string) {
     const { data, error } = await supabase
       .from('profile_sections')
       .select(`
-        *,
+        id,
+        user_id,
+        title,
+        media_type,
+        display_order,
         section_items (
-          *,
-          media_items (*)
+          id,
+          rating,
+          created_at,
+          media_items (
+            id,
+            external_id,
+            media_type,
+            provider,
+            title,
+            subtitle,
+            image_url,
+            images,
+            header,
+            tagline,
+            stats,
+            metadata,
+            description,
+            action_button,
+            secondary_action_button,
+            scrollable_sections,
+            related_lists,
+            streaming_links
+          )
         )
       `)
       .eq('user_id', userId)
@@ -218,7 +243,17 @@ export async function getUserDiary(userId: string) {
         created_at,
         review_text,
         is_spoiler,
-        media_items (*)
+        media_items (
+          id,
+          external_id,
+          media_type,
+          provider,
+          title,
+          subtitle,
+          image_url,
+          images,
+          header
+        )
       `)
       .eq('user_id', userId)
       .order('logged_date', { ascending: false })
@@ -441,8 +476,22 @@ export async function getRecommendations(userId: string) {
     const { data, error } = await supabase
       .from('recommendations')
       .select(`
-        *,
-        media_items (*),
+        id,
+        created_at,
+        message,
+        is_anonymous,
+        recipient_id,
+        media_items (
+          id,
+          external_id,
+          media_type,
+          provider,
+          title,
+          subtitle,
+          image_url,
+          images,
+          header
+        ),
         sender:users!sender_id (
           id,
           name,

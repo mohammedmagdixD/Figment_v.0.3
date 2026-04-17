@@ -9,7 +9,7 @@ import { PWAGatekeeper } from './components/PWAGatekeeper.tsx';
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <AuthProvider>
-      <ThemeProvider defaultTheme="dark" storageKey="shelve-theme">
+      <ThemeProvider defaultTheme="system" storageKey="shelve-theme">
         <PWAGatekeeper>
           <App />
         </PWAGatekeeper>

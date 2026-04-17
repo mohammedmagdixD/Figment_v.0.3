@@ -98,8 +98,10 @@ body {
 
 /* Prevent rubber-band scroll on the body itself (keep it on scroll containers) */
 html, body {
-  overscroll-behavior: none;
-  background-color: #F4F4F4; /* Light mode background */
+  overscroll-behavior-y: none; /* Stops iOS elastic bounce effect */
+  -webkit-tap-highlight-color: transparent; /* Removes touch flash globally */
+  touch-action: manipulate; /* Hardware-accelerated tap actions and scrolling */
+  background-color: var(--system-background, #F4F4F4); /* Default light theme background */
 }
 
 /* Dark mode body background */
@@ -176,15 +178,15 @@ html.dark body {
   --text-caption2--line-height: 13px;
   --text-caption2--letter-spacing: 0.06px;
 
-  --color-ink-black: #1E1E1E;
-  --color-dark-gray: #555555;
-  --color-gray: #888888;
-  --color-light: #F4F4F4;
-
-  --color-morning-haze: #FDECC9;
-  --color-whispering-leaf: #D1EACD;
-  --color-quiet-sky: #C4E3F3;
-  --color-cherry-blossom: #F4C8DD;
+  /* Map iOS CSS variables to Tailwind colors */
+  --color-system-background: var(--system-background);
+  --color-secondary-system-background: var(--secondary-system-background);
+  --color-tertiary-system-background: var(--tertiary-system-background);
+  --color-label: var(--label);
+  --color-secondary-label: var(--secondary-label);
+  --color-tertiary-label: var(--tertiary-label);
+  --color-separator: var(--separator);
+  --color-overlay: rgba(0, 0, 0, 0.4); /* Standard iOS dimming overlay */
 
   /* iOS Semantic Colors */
   --color-ios-blue: #007AFF;

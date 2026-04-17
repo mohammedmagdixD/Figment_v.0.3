@@ -27,11 +27,11 @@ export const UniversalListItem: React.FC<UniversalListItemProps> = ({
   
   const renderIcon = () => {
     switch (icon) {
-      case 'film': return <Film className="w-5 h-5 text-[var(--secondary-label)]" />;
-      case 'tv': return <Tv className="w-5 h-5 text-[var(--secondary-label)]" />;
-      case 'book': return <BookOpen className="w-5 h-5 text-[var(--secondary-label)]" />;
+      case 'film': return <Film className="w-5 h-5 text-secondary-label" />;
+      case 'tv': return <Tv className="w-5 h-5 text-secondary-label" />;
+      case 'book': return <BookOpen className="w-5 h-5 text-secondary-label" />;
       case 'music':
-      default: return <Music className="w-5 h-5 text-[var(--secondary-label)]" />;
+      default: return <Music className="w-5 h-5 text-secondary-label" />;
     }
   };
 
@@ -46,18 +46,18 @@ export const UniversalListItem: React.FC<UniversalListItemProps> = ({
 
   return (
     <div 
-      className={`flex items-center gap-4 py-3 border-b border-[var(--separator)] last:border-0 ${onClick ? 'cursor-pointer hover:opacity-80 transition-opacity' : ''}`}
+      className={`flex items-center gap-4 py-3 border-b border-separator last:border-0 ${onClick ? 'cursor-pointer hover:opacity-80 transition-opacity' : ''}`}
       onClick={onClick}
     >
-      <div className={`${getImageContainerClasses()} overflow-hidden bg-[var(--tertiary-system-background)] shrink-0 relative flex items-center justify-center border border-[var(--separator)]`}>
+      <div className={`${getImageContainerClasses()} overflow-hidden bg-tertiary-system-background shrink-0 relative flex items-center justify-center border border-separator`}>
         {imageStyle === 'circle' && (
-          <div className="absolute inset-0 rounded-full border-[3px] border-ink-black/90 dark:border-white/10 pointer-events-none z-10 shadow-inner" />
+          <div className="absolute inset-0 rounded-full border-[3px] border-ink-black/90 border-separator/20 pointer-events-none z-10 shadow-inner" />
         )}
         {imageUrl ? (
           <>
             {/* Skeleton Placeholder */}
             {!isLoaded && (
-              <div className="absolute inset-0 bg-[var(--secondary-system-background)] animate-pulse" />
+              <div className="absolute inset-0 bg-secondary-system-background animate-pulse" />
             )}
             
             <motion.img 
@@ -82,11 +82,11 @@ export const UniversalListItem: React.FC<UniversalListItemProps> = ({
         )}
       </div>
       <div className="flex-1 min-w-0">
-        <h4 className="font-sans text-base font-semibold text-[var(--label)] truncate">
+        <h4 className="font-sans text-base font-semibold text-label truncate">
           {title}
         </h4>
         {subtitle && (
-          <p className="font-sans text-sm text-[var(--secondary-label)] truncate mt-0.5">
+          <p className="font-sans text-sm text-secondary-label truncate mt-0.5">
             {subtitle}
           </p>
         )}

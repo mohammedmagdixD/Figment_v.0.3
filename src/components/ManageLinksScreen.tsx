@@ -70,12 +70,12 @@ export function ManageLinksScreen({ isOpen, onClose, socials, onSocialsChange, u
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-[var(--system-background)] flex flex-col">
-      <div className="flex items-center justify-between p-4 border-b border-[var(--separator)] shrink-0 pt-safe">
-        <h2 className="text-xl font-bold text-[var(--label)]">Manage Links</h2>
+    <div className="fixed inset-0 z-50 bg-system-background flex flex-col">
+      <div className="flex items-center justify-between p-4 border-b border-separator shrink-0 pt-safe">
+        <h2 className="text-xl font-bold text-label">Manage Links</h2>
         <button
           onClick={onClose}
-          className="p-2 rounded-full hover:bg-[var(--secondary-system-background)] text-[var(--secondary-label)] transition-colors"
+          className="p-2 rounded-full hover:bg-secondary-system-background text-secondary-label transition-colors"
         >
           <X className="w-5 h-5" />
         </button>
@@ -83,7 +83,7 @@ export function ManageLinksScreen({ isOpen, onClose, socials, onSocialsChange, u
 
       <div className="flex-1 overflow-y-auto p-4 pb-32">
         {items.length === 0 ? (
-          <div className="text-center text-[var(--secondary-label)] mt-10">
+          <div className="text-center text-secondary-label mt-10">
             No links added yet.
           </div>
         ) : (
@@ -97,26 +97,26 @@ export function ManageLinksScreen({ isOpen, onClose, socials, onSocialsChange, u
                 <Reorder.Item
                   key={social.id}
                   value={social}
-                  className="flex items-center gap-4 py-3 border-b border-[var(--separator)] last:border-0"
+                  className="flex items-center gap-4 py-3 border-b border-separator last:border-0"
                 >
-                  <div className="cursor-grab active:cursor-grabbing text-[var(--tertiary-label)]">
+                  <div className="cursor-grab active:cursor-grabbing text-tertiary-label">
                     <List weight="bold" className="w-6 h-6" />
                   </div>
                   
-                  <div className="w-10 h-10 flex items-center justify-center shrink-0 text-[var(--label)]">
+                  <div className="w-10 h-10 flex items-center justify-center shrink-0 text-label">
                     <SocialIcon icon={Icon} className="w-7 h-7" />
                   </div>
                   
                   <div className="flex-1 min-w-0">
-                    <p className="text-[var(--label)] font-medium text-base truncate">{platformDef.name}</p>
-                    <p className="text-[var(--secondary-label)] text-sm truncate">
+                    <p className="text-label font-medium text-base truncate">{platformDef.name}</p>
+                    <p className="text-secondary-label text-sm truncate">
                       {social.platform === 'personal_website' ? social.url.split('||')[0] : `@${social.url}`}
                     </p>
                   </div>
 
                   <button
                     onClick={() => setDeleteId(social.id)}
-                    className="p-2 text-[var(--secondary-label)] hover:text-[var(--label)] transition-colors"
+                    className="p-2 text-secondary-label hover:text-label transition-colors"
                   >
                     <Trash className="w-6 h-6" />
                   </button>
@@ -127,10 +127,10 @@ export function ManageLinksScreen({ isOpen, onClose, socials, onSocialsChange, u
         )}
       </div>
 
-      <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-[var(--system-background)] via-[var(--system-background)] to-transparent pb-safe">
+      <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-system-background via-system-background to-transparent pb-safe">
         <button
           onClick={() => setIsAddModalOpen(true)}
-          className="w-full py-4 rounded-2xl bg-[var(--label)] text-[var(--system-background)] font-semibold text-lg flex items-center justify-center gap-2 hover:opacity-90 transition-opacity shadow-lg"
+          className="w-full py-4 rounded-2xl bg-label text-system-background font-semibold text-lg flex items-center justify-center gap-2 hover:opacity-90 transition-opacity shadow-lg"
         >
           <Plus weight="bold" className="w-5 h-5" />
           Add New Link
