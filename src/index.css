@@ -104,6 +104,19 @@ html, body {
   background-color: var(--system-background, #F4F4F4); /* Default light theme background */
 }
 
+/* Eradicate text-selection highlight when dragging or double tapping UI components */
+.user-select-none {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Eliminate system long-press menus on images that native apps don't have */
+img {
+  -webkit-touch-callout: none; 
+  -webkit-user-select: none;
+  user-select: none;
+}
+
 /* Dark mode body background */
 html.dark body {
   background-color: #1C1C1E; /* iOS system grouped background */

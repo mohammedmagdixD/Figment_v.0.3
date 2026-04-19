@@ -1,4 +1,5 @@
 import useSWR from 'swr';
+import { useMemo } from 'react';
 import { getUserShelves, updateShelfOrder } from '../services/supabaseData';
 
 const getStandardShelfTitle = (type: string, originalTitle: string) => {
@@ -25,25 +26,38 @@ export function useShelves(userId: string | undefined) {
     }
   );
 
-  const shelves = data ? data.map((s: any) => ({
-    ...s,
-    title: getStandardShelfTitle(s.media_type || s.type, s.title)
-  })) : [];
+  const shelves = useMemo(() => {
+    return data ? data.map((s: any) => ({
+      ...s,
+      title: getStandardShelfTitle(s.media_type || s.type, s.title)
+    })) : [];
+  }, [data]);
 
   const handleReorder = async (newShelves: any[]) => {
-    // 1. Optimistic UI Mutator - Instant screen update without waiting for DB response.
-    mutate(newShelves, false); 
-    
     if (!userId) return;
+    
+    // Map the internal shelves back to the expected DB response format if needed
+    // or just directly use newShelves since our cache holds the mapped/unmapped structure
     try {
       const shelfIds = newShelves.map(s => s.id);
-      await updateShelfOrder(userId, shelfIds);
-      // Validated in background; mutate again to ensure sync if needed
-      mutate();
+      
+      await mutate(
+        async () => {
+          await updateShelfOrder(userId, shelfIds);
+          // Return the updated array to populate SWR cache (if you had a fetcher, you'd fetch here)
+          return newShelves; 
+        },
+        { 
+          // Optimistic UI state
+          optimisticData: newShelves, 
+          // Roll back to the original SWR cache if the async throws
+          rollbackOnError: true,
+          populateCache: true,
+          revalidate: false, // Wait until next interval or forced fetch
+        }
+      );
     } catch (err) {
       console.error('Failed to update shelf order:', err);
-      // Automatic silent rollback if database operation fails
-      mutate(); 
     }
   };
 

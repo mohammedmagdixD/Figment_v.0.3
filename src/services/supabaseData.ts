@@ -91,34 +91,11 @@ export async function getUserShelves(userId: string) {
     const { data, error } = await supabase
       .from('profile_sections')
       .select(`
-        id,
-        user_id,
-        title,
-        media_type,
-        display_order,
+        *,
         section_items (
-          id,
-          rating,
-          created_at,
+          *,
           media_items (
-            id,
-            external_id,
-            media_type,
-            provider,
-            title,
-            subtitle,
-            image_url,
-            images,
-            header,
-            tagline,
-            stats,
-            metadata,
-            description,
-            action_button,
-            secondary_action_button,
-            scrollable_sections,
-            related_lists,
-            streaming_links
+            *
           )
         )
       `)
@@ -235,24 +212,9 @@ export async function getUserDiary(userId: string) {
     const { data, error } = await supabase
       .from('diary_entries')
       .select(`
-        id,
-        rating,
-        is_liked,
-        is_rewatch,
-        logged_date,
-        created_at,
-        review_text,
-        is_spoiler,
+        *,
         media_items (
-          id,
-          external_id,
-          media_type,
-          provider,
-          title,
-          subtitle,
-          image_url,
-          images,
-          header
+          *
         )
       `)
       .eq('user_id', userId)
@@ -476,22 +438,8 @@ export async function getRecommendations(userId: string) {
     const { data, error } = await supabase
       .from('recommendations')
       .select(`
-        id,
-        created_at,
-        message,
-        is_anonymous,
-        recipient_id,
-        media_items (
-          id,
-          external_id,
-          media_type,
-          provider,
-          title,
-          subtitle,
-          image_url,
-          images,
-          header
-        ),
+        *,
+        media_items (*),
         sender:users!sender_id (
           id,
           name,

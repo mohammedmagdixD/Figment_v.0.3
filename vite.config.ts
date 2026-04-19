@@ -15,7 +15,38 @@ export default defineConfig(({mode}) => {
         injectRegister: 'auto',
         workbox: {
           globPatterns: ['**/*.{js,css,html,png,jpg,jpeg,svg,webp,ico,woff,woff2}'],
+          navigateFallback: '/index.html',
           runtimeCaching: [
+            {
+              // UI Assets (Stale-While-Revalidate)
+              urlPattern: /\.(?:js|css|woff2?|eot|ttf|otf)$/i,
+              handler: 'StaleWhileRevalidate',
+              options: {
+                cacheName: 'ui-assets-cache',
+                expiration: {
+                  maxEntries: 200,
+                  maxAgeSeconds: 60 * 60 * 24 * 7, // 7 Days
+                },
+                cacheableResponse: {
+                  statuses: [0, 200]
+                }
+              }
+            },
+            {
+              // Static Media (Cache-First)
+              urlPattern: /\.(?:png|jpg|jpeg|svg|webp|ico|gif|webm|mp4)$/i,
+              handler: 'CacheFirst',
+              options: {
+                cacheName: 'static-media-cache',
+                expiration: {
+                  maxEntries: 1000,
+                  maxAgeSeconds: 60 * 60 * 24 * 30, // 30 Days
+                },
+                cacheableResponse: {
+                  statuses: [0, 200]
+                }
+              }
+            },
             {
               // Supabase REST API (Stale-While-Revalidate)
               urlPattern: /^https:\/\/.*\.supabase\.co\/rest\/v1\/.*/i,
@@ -79,6 +110,19 @@ export default defineConfig(({mode}) => {
       alias: {
         '@': path.resolve(__dirname, '.'),
       },
+    },
+    build: {
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            'react-vendor': ['react', 'react-dom'],
+            'motion-vendor': ['motion'],
+            'lucide-vendor': ['lucide-react'],
+            'supabase-vendor': ['@supabase/supabase-js'],
+            'swr-vendor': ['swr']
+          }
+        }
+      }
     },
     server: {
       // HMR is disabled in AI Studio via DISABLE_HMR env var.

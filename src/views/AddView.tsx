@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, Suspense, lazy } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Search, ArrowLeft, Music, Headphones, Book, Film, Tv, Clock, Star } from 'lucide-react';
 import { MediaType, SearchResult, searchMedia } from '../services/api';
@@ -6,8 +6,9 @@ import { haptics } from '../utils/haptics';
 import { useSearchHistory } from '../hooks/useSearchHistory';
 import { useLongPress } from '../hooks/useLongPress';
 import { LogMediaModal } from '../components/LogMediaModal';
-import { MediaDetailsModal } from '../components/MediaDetailsModal';
 import { ConfirmDeleteModal } from '../components/ConfirmDeleteModal';
+
+const MediaDetailsModal = lazy(() => import('../components/MediaDetailsModal').then(module => ({ default: module.MediaDetailsModal })));
 
 const MEDIA_TYPES: { id: MediaType; label: string; icon: React.ReactNode }[] = [
   { id: 'movie', label: 'Films', icon: <Film className="w-4 h-4" /> },
@@ -116,13 +117,14 @@ export const AddView = React.memo(function AddView({ onAddItem, initialType }: {
     <div className="flex flex-col h-full bg-system-background">
       {/* Header / Search Bar Area */}
       <div className="px-4 pt-4 pb-2 z-10 bg-system-background">
-        <div className="flex items-center">
+        <div className="flex items-center gap-3">
           <AnimatePresence>
             {(isFocused || hasSearched) && (
               <motion.button
-                initial={{ opacity: 0, width: 0, marginRight: 0, scale: 0.8 }}
-                animate={{ opacity: 1, width: 36, marginRight: 12, scale: 1 }}
-                exit={{ opacity: 0, width: 0, marginRight: 0, scale: 0.8 }}
+                layout="position"
+                initial={{ opacity: 0, scale: 0.8, x: -10 }}
+                animate={{ opacity: 1, scale: 1, x: 0 }}
+                exit={{ opacity: 0, scale: 0.8, x: -10 }}
                 transition={{ type: "spring", stiffness: 500, damping: 30 }}
                 onMouseDown={(e) => e.preventDefault()}
                 onClick={() => {
@@ -131,14 +133,14 @@ export const AddView = React.memo(function AddView({ onAddItem, initialType }: {
                   setQuery('');
                   setResults([]);
                 }}
-                className="flex-shrink-0 h-9 flex items-center justify-center rounded-full bg-tertiary-system-background text-label overflow-hidden"
+                className="flex-shrink-0 w-9 h-9 flex items-center justify-center rounded-full bg-tertiary-system-background text-label"
               >
                 <ArrowLeft className="w-4 h-4 shrink-0" />
               </motion.button>
             )}
           </AnimatePresence>
           
-          <div className="relative flex-1">
+          <motion.div layout="position" className="relative flex-1">
             <Search 
               className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-secondary-label cursor-pointer" 
               onClick={() => {
@@ -157,7 +159,7 @@ export const AddView = React.memo(function AddView({ onAddItem, initialType }: {
               onKeyDown={handleKeyDown}
               className="w-full bg-tertiary-system-background border border-separator rounded-full py-2.5 pl-10 pr-4 text-sm font-sans text-label placeholder:text-secondary-label focus:outline-none focus:ring-2 focus:ring-label/10 transition-all shadow-sm"
             />
-          </div>
+          </motion.div>
         </div>
 
         {/* Media Type Selector */}
@@ -282,16 +284,18 @@ export const AddView = React.memo(function AddView({ onAddItem, initialType }: {
         </AnimatePresence>
       </div>
 
-      <MediaDetailsModal
-        item={detailItem}
-        onClose={() => setDetailItem(null)}
-        fullScreen={true}
-        onRateClick={() => {
-          if (detailItem) {
-            setSelectedItem(detailItem);
-          }
-        }}
-      />
+      <Suspense fallback={<div />}>
+        <MediaDetailsModal
+          item={detailItem}
+          onClose={() => setDetailItem(null)}
+          fullScreen={true}
+          onRateClick={() => {
+            if (detailItem) {
+              setSelectedItem(detailItem);
+            }
+          }}
+        />
+      </Suspense>
 
       <LogMediaModal 
         isOpen={!!selectedItem}

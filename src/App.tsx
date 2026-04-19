@@ -256,7 +256,6 @@ export default function App() {
     try {
       const mediaItemToLog = { ...item, type: item.type || activeSection?.type || 'movie' };
       
-      // OPTIMISTIC UI: Instantly update diary cache before network request
       const fakeBackendEntry = {
         id: 'temp-' + Date.now(),
         rating: details.rating,
@@ -274,34 +273,40 @@ export default function App() {
           media_type: mediaItemToLog.type
         }
       };
-      
-      mutate(['diary', user.id], (curr: any) => {
-        return curr ? [fakeBackendEntry, ...curr] : [fakeBackendEntry];
-      }, false); // don't revalidate yet
 
-      // Background Network Processing
-      if (activeSection) {
-        try {
-          await addSectionItem(activeSection.id, mediaItemToLog, user.id);
-        } catch (e) {
-          console.error('Failed to add to section:', e);
+      // Aggressive optimistic UI update with native rollback mapping
+      mutate(
+        ['diary', user.id],
+        async (currentDiary: any) => {
+          // Perform backend writes concurrently
+          const networkPromises: Promise<any>[] = [];
+          if (activeSection) {
+            networkPromises.push(addSectionItem(activeSection.id, mediaItemToLog, user.id).catch(e => console.error(e)));
+          } else {
+            networkPromises.push(syncMediaToShelf(user.id, mediaItemToLog).catch(e => console.error(e)));
+          }
+          
+          networkPromises.push(logMediaItem(user.id, mediaItemToLog, details));
+          
+          await Promise.all(networkPromises);
+          
+          // Data is successfully mutated remotely, but we let SWR auto-revalidate when it chooses,
+          // rather than forcing an immediate jittery UI rerender
+          return currentDiary ? [fakeBackendEntry, ...currentDiary] : [fakeBackendEntry];
+        },
+        {
+          optimisticData: (currentDiary: any) => {
+            return currentDiary ? [fakeBackendEntry, ...currentDiary] : [fakeBackendEntry];
+          },
+          rollbackOnError: true,
+          populateCache: true,
+          revalidate: false // Background revalidation is cheaper handled by cache timer
         }
-      } else {
-        try {
-          await syncMediaToShelf(user.id, mediaItemToLog);
-        } catch (e) {
-          console.error('Failed to sync to shelf:', e);
-        }
-      }
+      );
       
-      await logMediaItem(user.id, mediaItemToLog, details);
-      
-      // Revalidate to ensure synchronicity
-      mutate(['diary', user.id]);
-      mutate(['shelves', user.id]);
+      mutate(['shelves', user.id]); // Just flag it dirty
     } catch (error) {
       console.error('Failed to log media:', error);
-      mutate(['diary', user.id]); // Rollback on error
       throw error;
     }
   }, [user, activeSection]);
@@ -318,7 +323,6 @@ export default function App() {
         description: episode.description
       };
       
-      // OPTIMISTIC UI: Instantly update diary cache before network request
       const fakeBackendEntry = {
         id: 'temp-' + Date.now(),
         rating: rating,
@@ -336,24 +340,29 @@ export default function App() {
           media_type: mediaItemToLog.type
         }
       };
-      
-      mutate(['diary', user.id], (curr: any) => {
-        return curr ? [fakeBackendEntry, ...curr] : [fakeBackendEntry];
-      }, false);
 
-      // Background Network Processing
-      try {
-        await syncMediaToShelf(user.id, mediaItemToLog);
-      } catch (e) {
-        console.error('Failed to sync episode to shelf:', e);
-      }
-      await logMediaItem(user.id, mediaItemToLog, { rating, date, liked, rewatched, reviewText, hasSpoilers });
+      // Aggressive optimistic UI update with native rollback mapping
+      mutate(
+        ['diary', user.id],
+        async (currentDiary: any) => {
+          syncMediaToShelf(user.id, mediaItemToLog).catch(e => console.error('Failed to sync episode to shelf:', e));
+          await logMediaItem(user.id, mediaItemToLog, { rating, date, liked, rewatched, reviewText, hasSpoilers });
+          
+          return currentDiary ? [fakeBackendEntry, ...currentDiary] : [fakeBackendEntry];
+        },
+        {
+          optimisticData: (currentDiary: any) => {
+            return currentDiary ? [fakeBackendEntry, ...currentDiary] : [fakeBackendEntry];
+          },
+          rollbackOnError: true,
+          populateCache: true,
+          revalidate: false // Background revalidation is cheaper handled by cache timer
+        }
+      );
       
-      mutate(['diary', user.id]);
-      mutate(['shelves', user.id]);
+      mutate(['shelves', user.id]); // Flag dirty
     } catch (error) {
       console.error('Failed to log episode:', error);
-      mutate(['diary', user.id]); // Rollback on error
       throw error;
     }
   }, [user]);
@@ -406,6 +415,11 @@ export default function App() {
     window.history.pushState({}, '', newPath);
   }, [isOwnProfile, user, viewingUserId, activeTab, profile.handle]);
 
+  // Memoize active sections to preserve Framer Motion layout references across SWR rerenders
+  const activeSections = React.useMemo(() => {
+    return sections.filter(s => s.items && s.items.length > 0);
+  }, [sections]);
+
   if (isLoading || isDataLoading) {
     return (
       <div className="min-h-[100dvh] bg-system-background flex items-center justify-center">
@@ -421,8 +435,8 @@ export default function App() {
           {/* iOS Status Bar Spacer (simulated for desktop view) */}
           <div className="hidden sm:block h-6 w-full bg-system-background shrink-0" />
           
-          <div className="flex-1 overflow-hidden relative flex flex-col pt-safe-top">
-            <main className={`flex-1 overflow-y-auto hide-scrollbar scroll-container pb-28 space-y-2 ${renderedTab === 'profile' ? 'block' : 'hidden'}`}>
+          <div className="flex-1 overflow-hidden relative pt-safe-top bg-system-background">
+            <main className={`absolute inset-0 overflow-y-auto hide-scrollbar scroll-container pb-28 space-y-2 transition-opacity duration-200 ${renderedTab === 'profile' ? 'opacity-100 z-10 pointer-events-auto' : 'opacity-0 z-0 pointer-events-none'}`}>
               <Header 
                 profile={profile} 
                 isOwnProfile={isOwnProfile} 
@@ -432,18 +446,18 @@ export default function App() {
               />
               <div className="w-full h-[0.5px] bg-separator my-4" />
               
-              {sections.filter(s => s.items && s.items.length > 0).length > 0 ? (
+              {activeSections.length > 0 ? (
                 isOwnProfile ? (
                   <Reorder.Group 
                     axis="y" 
-                    values={sections.filter(s => s.items && s.items.length > 0)} 
+                    values={activeSections} 
                     onReorder={(newVisibleSections) => {
                       const hiddenSections = sections.filter(s => !(s.items && s.items.length > 0));
                       setSections([...newVisibleSections, ...hiddenSections]);
                     }} 
                     className="space-y-2"
                   >
-                    {sections.filter(s => s.items && s.items.length > 0).map((section) => (
+                    {activeSections.map((section) => (
                       <DraggableSection 
                         key={section.id} 
                         section={section} 
@@ -458,7 +472,7 @@ export default function App() {
                   </Reorder.Group>
                 ) : (
                   <div className="space-y-2">
-                    {sections.filter(s => s.items && s.items.length > 0).map((section) => (
+                    {activeSections.map((section) => (
                       <div key={section.id} className="relative bg-system-background z-0">
                         <MediaScroller 
                           section={section} 
@@ -528,7 +542,7 @@ export default function App() {
               <div className="h-4" /> {/* Spacer */}
             </main>
 
-            <main className={`flex-1 overflow-hidden hide-scrollbar flex flex-col ${renderedTab === 'diary' ? 'flex' : 'hidden'}`}>
+            <main className={`absolute inset-0 overflow-y-auto hide-scrollbar scroll-container flex flex-col transition-opacity duration-200 ${renderedTab === 'diary' ? 'opacity-100 z-10 pointer-events-auto' : 'opacity-0 z-0 pointer-events-none'}`}>
               <div className="px-4 pt-4 pb-2 shrink-0">
                 <h2 className="font-serif text-2xl font-semibold text-label">Diary</h2>
               </div>
@@ -537,19 +551,19 @@ export default function App() {
               </Suspense>
             </main>
 
-            <main className={`flex-1 overflow-hidden hide-scrollbar flex flex-col ${renderedTab === 'feed' ? 'flex' : 'hidden'}`}>
+            <main className={`absolute inset-0 overflow-y-auto hide-scrollbar scroll-container flex flex-col transition-opacity duration-200 ${renderedTab === 'feed' ? 'opacity-100 z-10 pointer-events-auto' : 'opacity-0 z-0 pointer-events-none'}`}>
               <Suspense fallback={<div className="flex-1 flex items-center justify-center"><Loader2 className="w-8 h-8 text-secondary-label animate-spin" /></div>}>
                 <FeedView />
               </Suspense>
             </main>
 
-            <main className={`flex-1 overflow-y-auto hide-scrollbar scroll-container pb-28 flex flex-col ${renderedTab === 'recommendations' ? 'flex' : 'hidden'}`}>
+            <main className={`absolute inset-0 overflow-y-auto hide-scrollbar scroll-container pb-28 flex flex-col transition-opacity duration-200 ${renderedTab === 'recommendations' ? 'opacity-100 z-10 pointer-events-auto' : 'opacity-0 z-0 pointer-events-none'}`}>
               <Suspense fallback={<div className="flex-1 flex items-center justify-center"><Loader2 className="w-8 h-8 text-secondary-label animate-spin" /></div>}>
                 <RecommendationsView viewingUserId={viewingUserId} />
               </Suspense>
             </main>
 
-            <main className={`flex-1 overflow-y-auto hide-scrollbar scroll-container flex flex-col ${renderedTab === 'add' ? 'flex' : 'hidden'}`}>
+            <main className={`absolute inset-0 overflow-y-auto hide-scrollbar scroll-container pb-28 flex flex-col transition-opacity duration-200 ${renderedTab === 'add' ? 'opacity-100 z-10 pointer-events-auto' : 'opacity-0 z-0 pointer-events-none'}`}>
               <Suspense fallback={<div className="flex-1 flex items-center justify-center"><Loader2 className="w-8 h-8 text-secondary-label animate-spin" /></div>}>
                 <AddView onAddItem={handleAddItem} initialType={activeSection?.type} />
               </Suspense>

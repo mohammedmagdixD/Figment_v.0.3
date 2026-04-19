@@ -52,8 +52,10 @@ const DiaryViewComponent = ({ entries }: { entries: DiaryEntry[] }) => {
   const [filter, setFilter] = useState<MediaType | 'all'>('all');
   const parentRef = useRef<HTMLDivElement>(null);
 
-  const filtered = filter === 'all' ? entries : entries.filter(e => e.media.type === filter);
-  const sorted = [...filtered].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  const sortedAndFiltered = React.useMemo(() => {
+    const arr = filter === 'all' ? entries : entries.filter(e => e.media.type === filter);
+    return [...arr].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  }, [entries, filter]);
 
   const filters = ['all', 'movie', 'book', 'anime', 'manga', 'music', 'podcast', 'webnovel'];
 
@@ -80,7 +82,7 @@ const DiaryViewComponent = ({ entries }: { entries: DiaryEntry[] }) => {
 
       <div ref={parentRef} className="flex-1 overflow-y-auto px-4 hide-scrollbar scroll-container pb-28">
         <div className="flex flex-col">
-          {sorted.map((entry) => {
+          {sortedAndFiltered.map((entry) => {
             return (
               <div key={entry.id}>
                 <motion.div 
@@ -145,7 +147,7 @@ const DiaryViewComponent = ({ entries }: { entries: DiaryEntry[] }) => {
               </div>
             );
           })}
-          {sorted.length === 0 && (
+          {sortedAndFiltered.length === 0 && (
             <div className="text-center py-12 text-secondary-label text-sm font-sans">
               No diary entries found.
             </div>

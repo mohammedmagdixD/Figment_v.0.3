@@ -281,17 +281,17 @@ export function LogMediaModal({ isOpen, onClose, item, onSave }: LogMediaModalPr
             onWheel={(e) => e.preventDefault()}
           />
           <motion.div
-            initial={{ y: '100%' }}
+            initial={{ y: viewportHeight }}
             animate={{ 
-              y: 0, 
-              height: sheetState === 'full' 
-                ? (isKeyboardOpen ? viewportHeight : initialHeight.current * 0.9) 
-                : initialHeight.current * 0.45,
-              top: sheetState === 'full' 
+              y: sheetState === 'full' 
                 ? (isKeyboardOpen ? viewportTop : viewportTop + viewportHeight - (initialHeight.current * 0.9)) 
                 : viewportTop + viewportHeight - (initialHeight.current * 0.45)
             }}
-            exit={{ y: '100%' }}
+            exit={{ y: viewportHeight + viewportTop }}
+            style={{
+              top: 0,
+              height: isKeyboardOpen ? viewportHeight : initialHeight.current * 0.9,
+            }}
             transition={{ 
               type: "spring", 
               damping: 28, 
@@ -301,7 +301,7 @@ export function LogMediaModal({ isOpen, onClose, item, onSave }: LogMediaModalPr
             drag="y"
             dragControls={dragControls}
             dragListener={false}
-            dragConstraints={{ top: 0 }}
+            dragConstraints={{ top: sheetState === 'full' ? (isKeyboardOpen ? viewportTop : viewportTop + viewportHeight - (initialHeight.current * 0.9)) : viewportTop + viewportHeight - (initialHeight.current * 0.45) }}
             onDragEnd={(e, { offset, velocity }) => {
               const velocityY = velocity.y;
               const offsetY = offset.y;

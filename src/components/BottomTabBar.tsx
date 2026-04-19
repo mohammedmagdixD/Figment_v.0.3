@@ -34,7 +34,6 @@ export const BottomTabBar = React.memo(function BottomTabBar({ activeTab, onTabC
   const activeTabConfig = tabs[activeIndex] || tabs[0];
 
   // Deterministic calculation of the active pill's position.
-  // This completely bypasses layoutId bugs and guarantees a smooth slide.
   // padding (6px) + (index * inactiveWidth (48px)) + (index * gap (6px))
   const pillLeft = 6 + (activeIndex * 48) + (activeIndex * 6);
   const pillWidth = activeTabConfig.width;
@@ -46,12 +45,12 @@ export const BottomTabBar = React.memo(function BottomTabBar({ activeTab, onTabC
         transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
         className="relative flex items-center gap-1.5 p-1.5 bg-system-background/80 backdrop-blur-3xl border border-separator shadow-sm rounded-full pointer-events-auto overflow-hidden"
       >
-        {/* The sliding active background pill */}
+        {/* The sliding active background pill (Using GPU 'x' transform instead of 'left') */}
         <motion.div
-          className="absolute top-1.5 bottom-1.5 bg-label rounded-full z-0"
+          className="absolute top-1.5 bottom-1.5 left-0 bg-label rounded-full z-0 origin-left"
           initial={false}
           animate={{ 
-            left: pillLeft, 
+            x: pillLeft, 
             width: pillWidth 
           }}
           transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}

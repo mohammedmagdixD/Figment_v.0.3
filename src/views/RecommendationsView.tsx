@@ -1,12 +1,13 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, Suspense, lazy } from 'react';
 import { Loader2, Sparkles, Music, Headphones, Book, Film, Tv, Trash2 } from 'lucide-react';
 import { getRecommendations, deleteRecommendation } from '../services/supabaseData';
 import { useAuth } from '../contexts/AuthContext';
 import { motion, AnimatePresence } from 'motion/react';
 import { haptics } from '../utils/haptics';
-import { MediaDetailsModal } from '../components/MediaDetailsModal';
 import { ConfirmDeleteModal } from '../components/ConfirmDeleteModal';
 import { SearchResult } from '../services/api';
+
+const MediaDetailsModal = lazy(() => import('../components/MediaDetailsModal').then(module => ({ default: module.MediaDetailsModal })));
 
 const getIconForType = (type: string) => {
   switch (type) {
@@ -255,10 +256,12 @@ export const RecommendationsView = React.memo(function RecommendationsView({ vie
 
       <AnimatePresence>
         {selectedMedia && (
-          <MediaDetailsModal
-            item={selectedMedia}
-            onClose={() => setSelectedMedia(null)}
-          />
+          <Suspense fallback={<div />}>
+            <MediaDetailsModal
+              item={selectedMedia}
+              onClose={() => setSelectedMedia(null)}
+            />
+          </Suspense>
         )}
       </AnimatePresence>
 
