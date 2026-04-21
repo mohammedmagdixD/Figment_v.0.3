@@ -25,6 +25,7 @@ const FeedView = lazy(() => import('./views/FeedView').then(module => ({ default
 const RecommendationsView = lazy(() => import('./views/RecommendationsView').then(module => ({ default: module.RecommendationsView })));
 const AddView = lazy(() => import('./views/AddView').then(module => ({ default: module.AddView })));
 const DiaryView = lazy(() => import('./components/DiaryView').then(module => ({ default: module.DiaryView })));
+const SectionSeeAllModal = lazy(() => import('./components/SectionSeeAllModal').then(module => ({ default: module.SectionSeeAllModal })));
 
 interface ErrorBoundaryProps {
   children: ReactNode;
@@ -77,7 +78,7 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
   }
 }
 
-const DraggableSection = React.memo(({ section, isFirstSection, onAddClick, onLogEpisode, albums, onAddToAlbum, onCreateAlbum, viewingUserId }: { section: any, isFirstSection?: boolean, onAddClick?: (section: any) => void, onLogEpisode?: any, albums?: Album[], onAddToAlbum?: any, onCreateAlbum?: any, viewingUserId?: string }) => {
+const DraggableSection = React.memo(({ section, isFirstSection, onAddClick, onSeeAllClick, onLogEpisode, albums, onAddToAlbum, onCreateAlbum, viewingUserId }: { section: any, isFirstSection?: boolean, onAddClick?: (section: any) => void, onSeeAllClick?: (section: any) => void, onLogEpisode?: any, albums?: Album[], onAddToAlbum?: any, onCreateAlbum?: any, viewingUserId?: string }) => {
   const controls = useDragControls();
   return (
     <Reorder.Item 
@@ -91,6 +92,7 @@ const DraggableSection = React.memo(({ section, isFirstSection, onAddClick, onLo
         dragControls={controls} 
         isFirstSection={isFirstSection}
         onAddClick={() => onAddClick?.(section)} 
+        onSeeAllClick={() => onSeeAllClick?.(section)}
         onLogEpisode={onLogEpisode}
         albums={albums}
         onAddToAlbum={onAddToAlbum}
@@ -117,6 +119,7 @@ export default function App() {
   const [isRecommendModalOpen, setIsRecommendModalOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [activeSection, setActiveSection] = useState<{ id: string, type: MediaType, title: string } | null>(null);
+  const [seeAllSection, setSeeAllSection] = useState<any | null>(null);
   
   const [activeTab, setActiveTab] = useState<TabType>('profile');
   const [isPending, startTransition] = React.useTransition();
@@ -172,6 +175,7 @@ export default function App() {
           return;
         }
 
+        // Block UI rendering until initial user load completes
         if (profileRef.current.handle === '@guest' || !profileRef.current.handle) {
           setIsDataLoading(true);
         }
@@ -183,29 +187,36 @@ export default function App() {
           return;
         }
 
-        const userProfile = await getUserProfile(targetUserId);
-
-        const getFallbackAvatar = (name: string) => {
-          const initial = (name || 'A').charAt(0).toUpperCase();
-          const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#3a3a3c"/><stop offset="100%" stop-color="#1c1c1e"/></linearGradient></defs><rect width="100" height="100" fill="url(#g)"/><text x="50" y="50" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="40" font-weight="500" fill="#ffffff" text-anchor="middle" dominant-baseline="central">${initial}</text></svg>`;
-          return `data:image/svg+xml;base64,${btoa(svg)}`;
-        };
-
-        const profileName = userProfile.name || userProfile.full_name || 'Anonymous';
-
-        setProfile({
-          name: profileName,
-          handle: userProfile.handle || userProfile.username ? `@${userProfile.username || userProfile.handle}` : '',
-          bio: userProfile.bio || '',
-          avatar: userProfile.avatar_url || userProfile.avatar || getFallbackAvatar(profileName),
-          socials: userProfile.socials?.map((s: any) => ({
-            id: s.id,
-            user_id: s.user_id,
-            platform: s.platform,
-            url: s.url,
-            position: s.position
-          })) || []
+        // Fetch user profile
+        const userProfile = await getUserProfile(targetUserId).catch(err => {
+          console.error("Offline or error fetching profile:", err);
+          return null; // Handle offline gracefully
         });
+
+        if (userProfile) {
+          const getFallbackAvatar = (name: string) => {
+            const initial = (name || 'A').charAt(0).toUpperCase();
+            const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#3a3a3c"/><stop offset="100%" stop-color="#1c1c1e"/></linearGradient></defs><rect width="100" height="100" fill="url(#g)"/><text x="50" y="50" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="40" font-weight="500" fill="#ffffff" text-anchor="middle" dominant-baseline="central">${initial}</text></svg>`;
+            return `data:image/svg+xml;base64,${btoa(svg)}`;
+          };
+
+          const profileName = userProfile.name || userProfile.full_name || 'Anonymous';
+
+          setProfile({
+            name: profileName,
+            handle: userProfile.handle || userProfile.username ? `@${userProfile.username || userProfile.handle}` : '',
+            bio: userProfile.bio || '',
+            avatar: userProfile.avatar_url || userProfile.avatar || getFallbackAvatar(profileName),
+            socials: userProfile.socials?.map((s: any) => ({
+              id: s.id,
+              user_id: s.user_id,
+              platform: s.platform,
+              url: s.url,
+              position: s.position
+            })) || []
+          });
+        }
+
 
       } catch (error) {
         console.error('Error loading data:', error);
@@ -256,60 +267,30 @@ export default function App() {
     try {
       const mediaItemToLog = { ...item, type: item.type || activeSection?.type || 'movie' };
       
-      const fakeBackendEntry = {
-        id: 'temp-' + Date.now(),
-        rating: details.rating,
-        is_liked: details.liked,
-        is_rewatch: details.rewatched,
-        logged_date: details.date,
-        created_at: new Date().toISOString(),
-        review_text: details.reviewText,
-        is_spoiler: details.hasSpoilers,
-        media_items: {
-          external_id: mediaItemToLog.id,
-          title: mediaItemToLog.title,
-          subtitle: mediaItemToLog.subtitle,
-          image_url: mediaItemToLog.image,
-          media_type: mediaItemToLog.type
-        }
-      };
-
-      // Aggressive optimistic UI update with native rollback mapping
-      mutate(
-        ['diary', user.id],
-        async (currentDiary: any) => {
-          // Perform backend writes concurrently
-          const networkPromises: Promise<any>[] = [];
-          if (activeSection) {
-            networkPromises.push(addSectionItem(activeSection.id, mediaItemToLog, user.id).catch(e => console.error(e)));
-          } else {
-            networkPromises.push(syncMediaToShelf(user.id, mediaItemToLog).catch(e => console.error(e)));
-          }
-          
-          networkPromises.push(logMediaItem(user.id, mediaItemToLog, details));
-          
-          await Promise.all(networkPromises);
-          
-          // Data is successfully mutated remotely, but we let SWR auto-revalidate when it chooses,
-          // rather than forcing an immediate jittery UI rerender
-          return currentDiary ? [fakeBackendEntry, ...currentDiary] : [fakeBackendEntry];
-        },
-        {
-          optimisticData: (currentDiary: any) => {
-            return currentDiary ? [fakeBackendEntry, ...currentDiary] : [fakeBackendEntry];
-          },
-          rollbackOnError: true,
-          populateCache: true,
-          revalidate: false // Background revalidation is cheaper handled by cache timer
-        }
-      );
+      // Perform backend writes concurrently
+      const networkPromises: Promise<any>[] = [];
+      if (activeSection) {
+        networkPromises.push(addSectionItem(activeSection.id, mediaItemToLog, user.id).catch(e => console.error(e)));
+      } else {
+        networkPromises.push(syncMediaToShelf(user.id, mediaItemToLog).catch(e => console.error(e)));
+      }
       
-      mutate(['shelves', user.id]); // Just flag it dirty
+      networkPromises.push(logMediaItem(user.id, mediaItemToLog, details));
+      
+      // Wait for Supabase to finish so the modal spinner stays active until completed
+      await Promise.all(networkPromises);
+      
+      // Now that backend is updated, trigger cache revalidation for views
+      await Promise.all([
+        refetchDiary(),
+        refetchShelves(),
+        mutate(['stats', user.id])
+      ]);
     } catch (error) {
       console.error('Failed to log media:', error);
       throw error;
     }
-  }, [user, activeSection]);
+  }, [user, activeSection, refetchDiary, refetchShelves]);
 
   const handleLogEpisode = React.useCallback(async (episode: any, rating: number, date: string, liked: boolean, rewatched: boolean, podcast: any, reviewText?: string, hasSpoilers?: boolean) => {
     if (!user) return;
@@ -323,49 +304,23 @@ export default function App() {
         description: episode.description
       };
       
-      const fakeBackendEntry = {
-        id: 'temp-' + Date.now(),
-        rating: rating,
-        is_liked: liked,
-        is_rewatch: rewatched,
-        logged_date: date,
-        created_at: new Date().toISOString(),
-        review_text: reviewText,
-        is_spoiler: hasSpoilers,
-        media_items: {
-          external_id: mediaItemToLog.id,
-          title: mediaItemToLog.title,
-          subtitle: mediaItemToLog.subtitle,
-          image_url: mediaItemToLog.image,
-          media_type: mediaItemToLog.type
-        }
-      };
-
-      // Aggressive optimistic UI update with native rollback mapping
-      mutate(
-        ['diary', user.id],
-        async (currentDiary: any) => {
-          syncMediaToShelf(user.id, mediaItemToLog).catch(e => console.error('Failed to sync episode to shelf:', e));
-          await logMediaItem(user.id, mediaItemToLog, { rating, date, liked, rewatched, reviewText, hasSpoilers });
-          
-          return currentDiary ? [fakeBackendEntry, ...currentDiary] : [fakeBackendEntry];
-        },
-        {
-          optimisticData: (currentDiary: any) => {
-            return currentDiary ? [fakeBackendEntry, ...currentDiary] : [fakeBackendEntry];
-          },
-          rollbackOnError: true,
-          populateCache: true,
-          revalidate: false // Background revalidation is cheaper handled by cache timer
-        }
-      );
+      // Wait for backend uploads so the modal spinner stays active
+      await Promise.all([
+        syncMediaToShelf(user.id, mediaItemToLog).catch(e => console.error('Failed to sync episode to shelf:', e)),
+        logMediaItem(user.id, mediaItemToLog, { rating, date, liked, rewatched, reviewText, hasSpoilers })
+      ]);
       
-      mutate(['shelves', user.id]); // Flag dirty
+      // Update local views immediately
+      await Promise.all([
+        refetchDiary(),
+        refetchShelves(),
+        mutate(['stats', user.id])
+      ]);
     } catch (error) {
       console.error('Failed to log episode:', error);
       throw error;
     }
-  }, [user]);
+  }, [user, refetchDiary, refetchShelves]);
 
   const handleRecommendSubmit = React.useCallback(async (recommendation: any) => {
     if (!viewingUserId) return;
@@ -462,6 +417,7 @@ export default function App() {
                         key={section.id} 
                         section={section} 
                         onAddClick={handleAddClick}
+                        onSeeAllClick={(section) => setSeeAllSection(section)}
                         onLogEpisode={handleLogEpisode}
                         albums={albums}
                         onAddToAlbum={handleAddToAlbum}
@@ -478,6 +434,7 @@ export default function App() {
                           section={section} 
                           dragControls={undefined}
                           onAddClick={undefined}
+                          onSeeAllClick={() => setSeeAllSection(section)}
                           onLogEpisode={undefined}
                           albums={albums}
                           onAddToAlbum={undefined}
@@ -557,13 +514,13 @@ export default function App() {
               </Suspense>
             </main>
 
-            <main className={`absolute inset-0 overflow-y-auto hide-scrollbar scroll-container pb-28 flex flex-col transition-opacity duration-200 ${renderedTab === 'recommendations' ? 'opacity-100 z-10 pointer-events-auto' : 'opacity-0 z-0 pointer-events-none'}`}>
+            <main className={`absolute inset-0 overflow-y-auto hide-scrollbar scroll-container flex flex-col transition-opacity duration-200 ${renderedTab === 'recommendations' ? 'opacity-100 z-10 pointer-events-auto' : 'opacity-0 z-0 pointer-events-none'}`}>
               <Suspense fallback={<div className="flex-1 flex items-center justify-center"><Loader2 className="w-8 h-8 text-secondary-label animate-spin" /></div>}>
                 <RecommendationsView viewingUserId={viewingUserId} />
               </Suspense>
             </main>
 
-            <main className={`absolute inset-0 overflow-y-auto hide-scrollbar scroll-container pb-28 flex flex-col transition-opacity duration-200 ${renderedTab === 'add' ? 'opacity-100 z-10 pointer-events-auto' : 'opacity-0 z-0 pointer-events-none'}`}>
+            <main className={`absolute inset-0 overflow-y-auto hide-scrollbar scroll-container flex flex-col transition-opacity duration-200 ${renderedTab === 'add' ? 'opacity-100 z-10 pointer-events-auto' : 'opacity-0 z-0 pointer-events-none'}`}>
               <Suspense fallback={<div className="flex-1 flex items-center justify-center"><Loader2 className="w-8 h-8 text-secondary-label animate-spin" /></div>}>
                 <AddView onAddItem={handleAddItem} initialType={activeSection?.type} />
               </Suspense>
@@ -591,6 +548,19 @@ export default function App() {
           {((!user && !viewingUserId) || isAuthModalOpen) && (
             <Suspense fallback={null}>
               <AuthScreen />
+            </Suspense>
+          )}
+          {seeAllSection && (
+            <Suspense fallback={null}>
+              <SectionSeeAllModal 
+                section={seeAllSection}
+                onClose={() => setSeeAllSection(null)}
+                onLogEpisode={handleLogEpisode}
+                albums={albums}
+                onAddToAlbum={handleAddToAlbum}
+                onCreateAlbum={handleCreateAlbum}
+                viewingUserId={viewingUserId}
+              />
             </Suspense>
           )}
         </AnimatePresence>

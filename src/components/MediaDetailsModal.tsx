@@ -48,6 +48,13 @@ export const MediaDetailsModal = React.memo(function MediaDetailsModal({ item, o
   const { user } = useAuth();
   const [userStats, setUserStats] = useState<{ rating?: number; dateAdded?: string } | null>(null);
 
+  const [currentItemId, setCurrentItemId] = useState(item?.id);
+  if (item?.id !== currentItemId) {
+    setCurrentItemId(item?.id);
+    setMediaDetails(null);
+    setIsLoading(!!item);
+  }
+
   useEffect(() => {
     if (item?.rating !== undefined || item?.dateAdded) {
       setUserStats({ rating: item.rating, dateAdded: item.dateAdded });

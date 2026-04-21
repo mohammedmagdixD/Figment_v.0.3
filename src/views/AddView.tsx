@@ -7,6 +7,8 @@ import { useSearchHistory } from '../hooks/useSearchHistory';
 import { useLongPress } from '../hooks/useLongPress';
 import { LogMediaModal } from '../components/LogMediaModal';
 import { ConfirmDeleteModal } from '../components/ConfirmDeleteModal';
+import { SearchBar } from '../components/SearchBar';
+import { MediaCard } from '../components/MediaCard';
 
 const MediaDetailsModal = lazy(() => import('../components/MediaDetailsModal').then(module => ({ default: module.MediaDetailsModal })));
 
@@ -70,7 +72,6 @@ export const AddView = React.memo(function AddView({ onAddItem, initialType }: {
   const [detailItem, setDetailItem] = useState<SearchResult | null>(null);
 
   const { history, addToHistory, removeFromHistory } = useSearchHistory();
-  const inputRef = useRef<HTMLInputElement>(null);
 
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
@@ -95,18 +96,6 @@ export const AddView = React.memo(function AddView({ onAddItem, initialType }: {
     }
   }, [activeType, addToHistory]);
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      inputRef.current?.blur();
-      handleSearch(query);
-    }
-  };
-
-  const handleClearFocus = () => {
-    setIsFocused(false);
-    inputRef.current?.blur();
-  };
-
   const handleHistoryClick = (historyQuery: string, historyType: MediaType) => {
     setQuery(historyQuery);
     setActiveType(historyType);
@@ -114,53 +103,26 @@ export const AddView = React.memo(function AddView({ onAddItem, initialType }: {
   };
 
   return (
-    <div className="flex flex-col h-full bg-system-background">
+    <div className="flex flex-col h-full">
       {/* Header / Search Bar Area */}
-      <div className="px-4 pt-4 pb-2 z-10 bg-system-background">
-        <div className="flex items-center gap-3">
-          <AnimatePresence>
-            {(isFocused || hasSearched) && (
-              <motion.button
-                layout="position"
-                initial={{ opacity: 0, scale: 0.8, x: -10 }}
-                animate={{ opacity: 1, scale: 1, x: 0 }}
-                exit={{ opacity: 0, scale: 0.8, x: -10 }}
-                transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                onMouseDown={(e) => e.preventDefault()}
-                onClick={() => {
-                  handleClearFocus();
-                  setHasSearched(false);
-                  setQuery('');
-                  setResults([]);
-                }}
-                className="flex-shrink-0 w-9 h-9 flex items-center justify-center rounded-full bg-tertiary-system-background text-label"
-              >
-                <ArrowLeft className="w-4 h-4 shrink-0" />
-              </motion.button>
-            )}
-          </AnimatePresence>
-          
-          <motion.div layout="position" className="relative flex-1">
-            <Search 
-              className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-secondary-label cursor-pointer" 
-              onClick={() => {
-                inputRef.current?.blur();
-                handleSearch(query);
-              }}
-            />
-            <input
-              ref={inputRef}
-              type="text"
-              placeholder="Search..."
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              onFocus={() => setIsFocused(true)}
-              onBlur={() => setIsFocused(false)}
-              onKeyDown={handleKeyDown}
-              className="w-full bg-tertiary-system-background border border-separator rounded-full py-2.5 pl-10 pr-4 text-sm font-sans text-label placeholder:text-secondary-label focus:outline-none focus:ring-2 focus:ring-label/10 transition-all shadow-sm"
-            />
-          </motion.div>
-        </div>
+      <div className="px-4 pt-4 pb-2 z-10">
+        <SearchBar
+          query={query}
+          onQueryChange={setQuery}
+          onSearch={handleSearch}
+          isFocused={isFocused}
+          onFocusChange={setIsFocused}
+          showBackButton={isFocused || hasSearched}
+          onBackClick={() => {
+            setIsFocused(false);
+            setHasSearched(false);
+            setQuery('');
+            setTimeout(() => {
+              setResults([]);
+            }, 400); // Wait for transition to finish before destroying results
+          }}
+          placeholder="Search..."
+        />
 
         {/* Media Type Selector */}
         <div className="flex gap-2 overflow-x-auto pb-2 pt-3 -mx-4 px-4 hide-scrollbar">
@@ -197,7 +159,7 @@ export const AddView = React.memo(function AddView({ onAddItem, initialType }: {
       {/* Content Area */}
       <div 
         className="flex-1 overflow-y-auto px-4 hide-scrollbar pb-28"
-        onClick={() => isFocused && handleClearFocus()}
+        onClick={() => isFocused && setIsFocused(false)}
       >
         <AnimatePresence mode="wait">
           {!hasSearched && !isLoading ? (
@@ -236,36 +198,17 @@ export const AddView = React.memo(function AddView({ onAddItem, initialType }: {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="py-4 space-y-3"
+              className="py-4"
             >
-              {results.map((item) => (
-                <div 
-                  key={item.id} 
-                  className="flex items-center gap-4 py-3 px-2 border-b border-separator last:border-0 cursor-pointer hover:bg-tertiary-system-background transition-colors group"
-                  onClick={() => setDetailItem(item)}
-                >
-                  <div className={`relative shrink-0 overflow-hidden bg-secondary-system-background shadow-sm border border-separator ${
-                    (item.type === 'music' || item.type === 'song') ? 'w-[60px] h-[60px] rounded-full' : 'w-[60px] aspect-[2/3] rounded-lg'
-                  }`}>
-                    <img src={item.image || undefined} alt={item.title} className="w-full h-full object-cover" />
-                    <div className={`absolute inset-0 border border-separator/30 pointer-events-none ${
-                      (item.type === 'music' || item.type === 'song') ? 'rounded-full' : 'rounded-lg'
-                    }`} />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h4 className="font-sans font-semibold text-label truncate">{item.title}</h4>
-                    <p className="font-sans text-sm text-secondary-label truncate">{item.subtitle}</p>
-                  </div>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setSelectedItem(item);
-                    }}
-                    className="p-2.5 bg-transparent border border-separator shadow-sm rounded-full text-label hover:bg-secondary-system-background transition-colors shrink-0"
-                  >
-                    <Star className="w-4 h-4" />
-                  </button>
-                </div>
+              {results.map((item, index) => (
+                <MediaCard 
+                  key={item.id || index}
+                  item={item}
+                  viewMode="search-result"
+                  sectionType={item.type}
+                  onItemClick={setDetailItem}
+                  onLogClick={setSelectedItem}
+                />
               ))}
               
               {isLoading && (
@@ -285,16 +228,18 @@ export const AddView = React.memo(function AddView({ onAddItem, initialType }: {
       </div>
 
       <Suspense fallback={<div />}>
-        <MediaDetailsModal
-          item={detailItem}
-          onClose={() => setDetailItem(null)}
-          fullScreen={true}
-          onRateClick={() => {
-            if (detailItem) {
-              setSelectedItem(detailItem);
-            }
-          }}
-        />
+        {detailItem && (
+          <MediaDetailsModal
+            item={detailItem}
+            onClose={() => setDetailItem(null)}
+            fullScreen={true}
+            onRateClick={() => {
+              if (detailItem) {
+                setSelectedItem(detailItem);
+              }
+            }}
+          />
+        )}
       </Suspense>
 
       <LogMediaModal 

@@ -12,6 +12,7 @@ interface MediaScrollerProps {
   dragControls?: any;
   isFirstSection?: boolean;
   onAddClick?: () => void;
+  onSeeAllClick?: () => void;
   onLogEpisode?: (episode: any, rating: number, date: string, liked: boolean, rewatched: boolean, podcast: any) => void;
   albums?: Album[];
   onAddToAlbum?: (albumId: string, item: any) => void;
@@ -19,7 +20,7 @@ interface MediaScrollerProps {
   viewingUserId?: string;
 }
 
-export const MediaScroller = React.memo(function MediaScroller({ section, dragControls, isFirstSection = false, onAddClick, onLogEpisode, albums = [], onAddToAlbum, onCreateAlbum, viewingUserId }: MediaScrollerProps) {
+export const MediaScroller = React.memo(function MediaScroller({ section, dragControls, isFirstSection = false, onAddClick, onSeeAllClick, onLogEpisode, albums = [], onAddToAlbum, onCreateAlbum, viewingUserId }: MediaScrollerProps) {
   const [playingId, setPlayingId] = useState<string | null>(null);
   const [selectedItem, setSelectedItem] = useState<any | null>(null);
   const [addingToAlbumItem, setAddingToAlbumItem] = useState<any | null>(null);
@@ -104,9 +105,14 @@ export const MediaScroller = React.memo(function MediaScroller({ section, dragCo
               <Plus className="w-4 h-4" />
             </button>
           )}
-          <button className="text-secondary-label hover:text-label flex items-center font-sans text-base font-medium leading-relaxed active:opacity-70 transition-colors">
-            See All <ChevronRight className="w-4 h-4 ml-0.5" />
-          </button>
+          {section.items.length > 0 && onSeeAllClick && (
+            <button 
+              onClick={onSeeAllClick}
+              className="text-secondary-label hover:text-label flex items-center font-sans text-base font-medium leading-relaxed active:opacity-70 transition-colors"
+            >
+              See All <ChevronRight className="w-4 h-4 ml-0.5" />
+            </button>
+          )}
         </div>
       </div>
       

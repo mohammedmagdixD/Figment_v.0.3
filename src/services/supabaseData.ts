@@ -122,6 +122,7 @@ export async function getUserShelves(userId: string) {
           return {
             id: media.external_id || media.id || String(si.id),
             mediaType: media.media_type || media.mediaType || 'unknown',
+            addedAt: si.created_at,
             images,
             header,
             tagline: media.tagline || undefined,

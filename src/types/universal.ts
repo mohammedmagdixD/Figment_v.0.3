@@ -1,6 +1,7 @@
 export interface UniversalMediaData {
   id: string;
   mediaType: string;
+  addedAt?: string;
   images: {
     backdropUrl: string | null;
     posterUrl: string;
