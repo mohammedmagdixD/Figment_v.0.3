@@ -88,7 +88,7 @@ export function PWAGatekeeper({ children }: PWAGatekeeperProps) {
         </p>
 
         {isIOS ? (
-          <div className="w-full flex flex-col gap-6 text-left">
+          <div className="w-full text-left">
             <ol className="space-y-4 text-label font-medium">
               <li className="flex items-center gap-3">
                 <span className="flex items-center justify-center w-6 h-6 rounded-full bg-label text-system-background text-sm font-bold shrink-0">1</span>
@@ -99,12 +99,6 @@ export function PWAGatekeeper({ children }: PWAGatekeeperProps) {
                 <span>Scroll down and tap <br/><span className="flex items-center gap-2 mt-1 text-ios-blue"><PlusSquare className="w-5 h-5" /> Add to Home Screen</span></span>
               </li>
             </ol>
-            <button
-              onClick={() => setIsStandalone(true)}
-              className="w-full py-4 px-6 mt-4 bg-secondary-system-background text-label rounded-full font-semibold text-lg hover:opacity-90 transition-opacity"
-            >
-              Continue in Browser
-            </button>
           </div>
         ) : (
           <div className="w-full flex flex-col gap-4">
@@ -115,19 +109,13 @@ export function PWAGatekeeper({ children }: PWAGatekeeperProps) {
             >
               Install Figment
             </button>
-            <button
-              onClick={() => setIsStandalone(true)}
-              className="w-full py-4 px-6 bg-secondary-system-background text-label rounded-full font-semibold text-lg hover:opacity-90 transition-opacity"
-            >
-              Continue in Browser
-            </button>
             {!deferredPrompt && (
               <div className="text-xs text-red-500 mt-4 text-left bg-red-500/10 p-3 rounded-lg">
                 <p className="font-bold mb-1">Debug Info:</p>
                 <p>• beforeinstallprompt hasn't fired.</p>
-                <p>• Check if you are in an in-app browser (e.g. WhatsApp, Instagram).</p>
+                <p>• Check if you are in Incognito mode (install is blocked).</p>
                 <p>• Check if the app is already installed.</p>
-                <p>• Try opening directly in Chrome or Safari.</p>
+                <p>• Ensure manifest and icons are valid.</p>
               </div>
             )}
           </div>

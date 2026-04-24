@@ -7,6 +7,15 @@ import DOMPurify from 'dompurify';
 import { marked } from 'marked';
 import { haptics } from '../utils/haptics';
 
+// Ensure images are always loaded via proxy to bypass Canvas tainting and HTML-to-Image CORS limitations
+const getProxiedImage = (url: string | null | undefined) => {
+  if (!url) return undefined;
+  if (url.startsWith('http') && !url.includes(window.location.host)) {
+    return `/api/image-proxy?url=${encodeURIComponent(url)}`;
+  }
+  return url;
+};
+
 export type ViewMode = 'grid' | 'list' | 'carousel' | 'diary' | 'recommendation' | 'search-result';
 
 export interface MediaCardProps {
@@ -142,7 +151,7 @@ const MediaThumbnail = ({
 }) => (
   <div className={`overflow-hidden bg-tertiary-system-background ${className}`}>
     {imageUrl ? (
-      <img src={imageUrl} className="w-full h-full object-cover" referrerPolicy="no-referrer" loading={isPriority ? "eager" : "lazy"} />
+      <img src={getProxiedImage(imageUrl)} className="w-full h-full object-cover" referrerPolicy="no-referrer" loading={isPriority ? "eager" : "lazy"} />
     ) : (
       <div className="w-full h-full flex items-center justify-center text-secondary-label">
         {getIconForType(sectionType)}
@@ -314,7 +323,7 @@ const MediaCardComponent = ({
         className="w-full relative aspect-video rounded-2xl overflow-hidden bg-secondary-system-background shadow-sm cursor-pointer group shrink-0"
       >
         {imageUrl && (
-          <img src={imageUrl} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" referrerPolicy="no-referrer" loading={isPriority ? "eager" : "lazy"} />
+          <img src={getProxiedImage(imageUrl)} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" referrerPolicy="no-referrer" loading={isPriority ? "eager" : "lazy"} />
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex flex-col justify-end p-4">
           <h3 className="text-white font-bold text-xl drop-shadow-md truncate">{title}</h3>
@@ -428,7 +437,7 @@ const MediaCardComponent = ({
           >
             <div className="w-10 h-10 rounded-full bg-system-background flex items-center justify-center shrink-0 overflow-hidden border border-separator">
               {!item.is_anonymous && item.sender?.avatar_url ? (
-                <img src={item.sender.avatar_url} alt={senderName} className="w-full h-full object-cover" />
+                <img src={getProxiedImage(item.sender.avatar_url)} alt={senderName} className="w-full h-full object-cover" />
               ) : (
                 <Sparkles className="w-5 h-5 text-secondary-label" />
               )}
