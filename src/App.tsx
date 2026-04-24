@@ -20,6 +20,7 @@ import { useDiary } from './hooks/useDiary';
 import { useShelves } from './hooks/useShelves';
 
 import { BottomTabBar, TabType } from './components/BottomTabBar';
+import { ToastProvider } from './components/Toast';
 
 const FeedView = lazy(() => import('./views/FeedView').then(module => ({ default: module.FeedView })));
 const RecommendationsView = lazy(() => import('./views/RecommendationsView').then(module => ({ default: module.RecommendationsView })));
@@ -127,6 +128,7 @@ export default function App() {
   const [albums, setAlbums] = useState<Album[]>([]);
   const [isDataLoading, setIsDataLoading] = useState(false);
   const [isOwnProfile, setIsOwnProfile] = useState<boolean>(true);
+  const [sharedMediaItem, setSharedMediaItem] = useState<{ id: string, type: string } | null>(null);
 
   const profileRef = React.useRef(profile);
   useEffect(() => {
@@ -144,8 +146,13 @@ export default function App() {
         let targetUserId = user?.id;
         
         const handleMatch = path.match(/^\/@([\w.-]+)/);
+        const mediaMatch = path.match(/^\/m\/(.+)\/(.+)/);
         
         if (path === '/' || path === '') {
+          setActiveTab('profile');
+          setRenderedTab('profile');
+        } else if (mediaMatch) {
+          setSharedMediaItem({ type: mediaMatch[1], id: mediaMatch[2] });
           setActiveTab('profile');
           setRenderedTab('profile');
         } else if (handleMatch) {
@@ -563,7 +570,26 @@ export default function App() {
               />
             </Suspense>
           )}
+          {sharedMediaItem && (
+            <Suspense fallback={null}>
+              <MediaDetailsModal
+                item={{
+                  id: sharedMediaItem.id,
+                  type: sharedMediaItem.type,
+                  title: 'Loading...',
+                  subtitle: '',
+                  image: ''
+                }}
+                onClose={() => {
+                  setSharedMediaItem(null);
+                  window.history.pushState({}, '', '/');
+                }}
+                viewingUserId={viewingUserId}
+              />
+            </Suspense>
+          )}
         </AnimatePresence>
+        <ToastProvider />
       </div>
     </ErrorBoundary>
   );

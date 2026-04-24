@@ -1,7 +1,8 @@
 import React, { useState, memo, useRef, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { Play, Pause, ListPlus, Loader2, Star, Heart, Repeat, EyeOff, Trash2, Sparkles, Music, Headphones, Book, Film, Tv } from 'lucide-react';
-import { fetchWithBackoff, UniversalMediaData } from '../services/api';
+import { fetchWithBackoff } from '../services/api';
+import { UniversalMediaData } from '../types/universal';
 import DOMPurify from 'dompurify';
 import { marked } from 'marked';
 import { haptics } from '../utils/haptics';
@@ -19,6 +20,7 @@ export interface MediaCardProps {
   onPlayToggle?: (url: string, id: string, title?: string, artist?: string, artworkUrl?: string) => void;
   onAddToAlbum?: (item: any) => void;
   onLogClick?: (item: any) => void;
+  onAddToListClick?: (item: any) => void;
   
   // Specific handlers for recommendations
   onDelete?: (id: string) => void;
@@ -162,6 +164,7 @@ const MediaCardComponent = ({
   onPlayToggle,
   onAddToAlbum,
   onLogClick,
+  onAddToListClick,
   onDelete,
   isOwnProfile
 }: MediaCardProps) => {
@@ -274,17 +277,31 @@ const MediaCardComponent = ({
             </span>
           </div>
         </div>
-        {viewMode === 'search-result' && onLogClick && (
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onLogClick(item);
-            }}
-            className="p-2 sm:p-2.5 bg-transparent border border-separator shadow-sm rounded-full text-secondary-label hover:text-label hover:bg-secondary-system-background transition-colors shrink-0 mx-1 group-hover:border-separator/80"
-          >
-            <Star className="w-5 h-5" />
-          </button>
-        )}
+        <div className="flex items-center shrink-0">
+          {onAddToListClick && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onAddToListClick(item);
+              }}
+              className="p-2 sm:p-2.5 bg-transparent border border-separator shadow-sm rounded-full text-secondary-label hover:text-label hover:bg-secondary-system-background transition-colors mx-1 group-hover:border-separator/80"
+              aria-label="Add to List"
+            >
+              <ListPlus className="w-5 h-5" />
+            </button>
+          )}
+          {viewMode === 'search-result' && onLogClick && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onLogClick(item);
+              }}
+              className="p-2 sm:p-2.5 bg-transparent border border-separator shadow-sm rounded-full text-secondary-label hover:text-label hover:bg-secondary-system-background transition-colors mx-1 group-hover:border-separator/80"
+            >
+              <Star className="w-5 h-5" />
+            </button>
+          )}
+        </div>
       </motion.div>
     );
   }
@@ -369,6 +386,20 @@ const MediaCardComponent = ({
             <ReviewContent text={item.reviewText} hasSpoilers={item.hasSpoilers} />
           )}
         </div>
+        {onAddToListClick && (
+          <div className="shrink-0 flex items-center pt-2 px-1">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onAddToListClick(item);
+              }}
+              className="p-2 sm:p-2.5 bg-transparent border border-separator shadow-sm rounded-full text-secondary-label hover:text-label hover:bg-secondary-system-background transition-colors group-hover:border-separator/80"
+              aria-label="Add to List"
+            >
+              <ListPlus className="w-5 h-5" />
+            </button>
+          </div>
+        )}
       </motion.div>
     );
   }
@@ -417,6 +448,15 @@ const MediaCardComponent = ({
               {getIconForType(sectionType)}
               <span className="text-xs font-medium">{getLabelForType(sectionType)}</span>
             </div>
+            {onAddToListClick && (
+              <button
+                onClick={(e) => { e.stopPropagation(); onAddToListClick(item); }}
+                className="p-1.5 rounded-full border border-separator !bg-transparent text-secondary-label hover:text-label hover:border-separator/80 hover:!bg-secondary-system-background transition-colors"
+                aria-label="Add to List"
+              >
+                <ListPlus className="w-4 h-4" />
+              </button>
+            )}
             {isOwnProfile && onDelete && (
               <button
                 onClick={(e) => { e.stopPropagation(); onDelete(item.id); }}
@@ -499,7 +539,7 @@ const MediaCardComponent = ({
             )}
           </button>
         )}
-        {(sectionType === 'music' || sectionType === 'song') && onAddToAlbum && (
+        {(sectionType === 'music' || sectionType === 'song') && onAddToAlbum ? (
           <button
             onClick={(e) => {
               e.stopPropagation();
@@ -509,7 +549,17 @@ const MediaCardComponent = ({
           >
             <ListPlus className="w-4 h-4" />
           </button>
-        )}
+        ) : onAddToListClick ? (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onAddToListClick(item);
+            }}
+            className="absolute top-2 right-2 w-8 h-8 rounded-full bg-black/50 backdrop-blur-md flex items-center justify-center text-white hover:bg-black/70 transition-colors z-20 opacity-0 group-hover:opacity-100"
+          >
+            <ListPlus className="w-4 h-4" />
+          </button>
+        ) : null}
       </div>
       <div className="w-full mt-1">
         <h3 className="font-sans text-base font-semibold leading-tight text-label card-text-truncate">

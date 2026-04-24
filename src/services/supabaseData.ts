@@ -241,12 +241,12 @@ export async function logMediaItem(
     const { data: mediaData, error: mediaError } = await supabase
       .from('media_items')
       .upsert({
-        external_id: String(mediaItem.id),
-        media_type: mediaItem.type || mediaItem.mediaType || 'unknown',
+        external_id: String(mediaItem.external_id || mediaItem.id),
+        media_type: mediaItem.type || mediaItem.mediaType || mediaItem.media_type || 'unknown',
         provider: mediaItem.provider || 'unknown',
         title: mediaItem.title || mediaItem.header?.title || '',
         subtitle: mediaItem.subtitle || mediaItem.header?.subtitle || '',
-        image_url: mediaItem.image || mediaItem.images?.posterUrl || mediaItem.images?.backdropUrl || '',
+        image_url: mediaItem.image || mediaItem.images?.posterUrl || mediaItem.images?.backdropUrl || mediaItem.image_url || '',
       }, { onConflict: 'external_id,media_type' })
       .select('id')
       .single();
@@ -271,9 +271,76 @@ export async function logMediaItem(
 
     if (diaryError) throw diaryError;
 
+    // 3. Auto-remove from Watchlist / Reading List
+    const { data: intentSections } = await supabase
+      .from('profile_sections')
+      .select('id')
+      .eq('user_id', userId)
+      .in('title', ['Watchlist', 'Reading List']);
+      
+    if (intentSections && intentSections.length > 0) {
+      await supabase
+        .from('section_items')
+        .delete()
+        .in('section_id', intentSections.map(s => s.id))
+        .eq('media_item_id', mediaData.id);
+    }
+
     return diaryData;
   } catch (error) {
     console.error('Error logging media item:', error);
+    throw error;
+  }
+}
+
+export async function addToIntentList(userId: string, mediaItem: any) {
+  try {
+    const mediaType = mediaItem.type || mediaItem.mediaType || mediaItem.media_type || 'unknown';
+    
+    // 1. Check if already logged
+    const interaction = await getUserMediaInteraction(userId, String(mediaItem.external_id || mediaItem.id), mediaType);
+    if (interaction) {
+      return { status: 'ALREADY_LOGGED', message: `You already ${['movie', 'tv', 'anime'].includes(mediaType) ? 'watched' : 'read'} this.` };
+    }
+
+    // 2. Determine List Type
+    const isWatchable = ['movie', 'tv', 'anime'].includes(mediaType);
+    const targetListName = isWatchable ? 'Watchlist' : 'Reading List';
+
+    // 3. Find or Create the List JIT
+    const { data: existingSections, error: fetchError } = await supabase
+      .from('profile_sections')
+      .select('id')
+      .eq('user_id', userId)
+      .eq('title', targetListName)
+      .limit(1);
+
+    if (fetchError) throw fetchError;
+
+    let sectionId;
+    if (existingSections && existingSections.length > 0) {
+      sectionId = existingSections[0].id;
+    } else {
+      const { data: newSection, error: createError } = await supabase
+        .from('profile_sections')
+        .insert({
+          user_id: userId,
+          title: targetListName,
+          media_type: isWatchable ? 'movie' : 'book',
+          display_order: 0
+        })
+        .select('id')
+        .single();
+      
+      if (createError) throw createError;
+      sectionId = newSection.id;
+    }
+
+    // 4. Add Item to Shelf
+    await addSectionItem(sectionId, mediaItem, userId);
+    return { status: 'SUCCESS' };
+  } catch (error) {
+    console.error('Error adding to intent list:', error);
     throw error;
   }
 }
@@ -287,12 +354,12 @@ export async function addSectionItem(
     const { data: mediaData, error: mediaError } = await supabase
       .from('media_items')
       .upsert({
-        external_id: String(mediaItem.id),
-        media_type: mediaItem.type || mediaItem.mediaType || 'unknown',
+        external_id: String(mediaItem.external_id || mediaItem.id),
+        media_type: mediaItem.type || mediaItem.mediaType || mediaItem.media_type || 'unknown',
         provider: mediaItem.provider || 'unknown',
         title: mediaItem.title || mediaItem.header?.title || '',
         subtitle: mediaItem.subtitle || mediaItem.header?.subtitle || '',
-        image_url: mediaItem.image || mediaItem.images?.posterUrl || mediaItem.images?.backdropUrl || '',
+        image_url: mediaItem.image || mediaItem.images?.posterUrl || mediaItem.images?.backdropUrl || mediaItem.image_url || '',
       }, { onConflict: 'external_id,media_type' })
       .select('id')
       .single();
@@ -402,12 +469,12 @@ export async function sendRecommendation(
     const { data: mediaData, error: mediaError } = await supabase
       .from('media_items')
       .upsert({
-        external_id: String(mediaItem.id),
-        media_type: mediaItem.type || mediaItem.mediaType || 'unknown',
+        external_id: String(mediaItem.external_id || mediaItem.id),
+        media_type: mediaItem.type || mediaItem.mediaType || mediaItem.media_type || 'unknown',
         provider: mediaItem.provider || 'unknown',
         title: mediaItem.title || mediaItem.header?.title || '',
         subtitle: mediaItem.subtitle || mediaItem.header?.subtitle || '',
-        image_url: mediaItem.image || mediaItem.images?.posterUrl || mediaItem.images?.backdropUrl || '',
+        image_url: mediaItem.image || mediaItem.images?.posterUrl || mediaItem.images?.backdropUrl || mediaItem.image_url || '',
       }, { onConflict: 'external_id,media_type' })
       .select('id')
       .single();

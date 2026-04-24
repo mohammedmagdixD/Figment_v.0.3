@@ -509,6 +509,92 @@ async function startServer() {
     }
   });
 
+  // Image proxy for CORS-restricted images (e.g., MAL, Google Books) to allow canvas export
+  app.get('/api/image-proxy', async (req, res) => {
+    try {
+      const url = req.query.url as string;
+      if (!url) return res.status(400).json({ error: 'No URL provided' });
+
+      if (!url.startsWith('http://') && !url.startsWith('https://')) {
+        return res.status(400).json({ error: 'Invalid URL' });
+      }
+
+      const response = await fetch(url, {
+        headers: {
+          'User-Agent': 'ShelveApp/1.0 (ImageProxy)',
+          'Accept': 'image/webp,image/png,image/jpeg,image/*;q=0.8',
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Fetch failed: ${response.status} ${response.statusText}`);
+      }
+
+      const contentType = response.headers.get('content-type');
+      if (contentType) res.setHeader('Content-Type', contentType);
+      
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      res.setHeader('Cache-Control', 'public, max-age=86400');
+      
+      const arrayBuffer = await response.arrayBuffer();
+      res.send(Buffer.from(arrayBuffer));
+    } catch (e: any) {
+      console.error('Image proxy error:', e.message);
+      res.status(500).json({ error: 'Failed to proxy image' });
+    }
+  });
+
+  // Handle dynamic OG tags for media items and redirect
+  app.get('/m/:type/:id', async (req, res, next) => {
+    const { type, id } = req.params;
+    
+    try {
+      // Basic bot user-agent detection
+      const userAgent = req.headers['user-agent'] || '';
+      const isBot = /bot|chatgpt|facebookexternalhit|whatsapp|twitterbot|discordbot|slackbot/i.test(userAgent);
+
+      let imgUrl = `https://${req.get('host')}/apple-touch-icon.png`; // Fallback image
+
+      if (isBot) {
+        return res.send(`
+          <!DOCTYPE html>
+          <html>
+            <head>
+              <meta property="og:title" content="View on Figment" />
+              <meta property="og:description" content="Click to view full details." />
+              <meta property="og:image" content="${imgUrl}" />
+              <meta property="og:url" content="https://${req.get('host')}/m/${type}/${id}" />
+              <meta name="twitter:card" content="summary_large_image" />
+            </head>
+            <body></body>
+          </html>
+        `);
+      }
+
+      let template: string;
+      if (process.env.NODE_ENV !== 'production') {
+        template = fs.readFileSync(path.resolve(process.cwd(), 'index.html'), 'utf-8');
+        template = await vite.transformIndexHtml(req.originalUrl, template);
+      } else {
+        template = fs.readFileSync(path.resolve(process.cwd(), 'dist/index.html'), 'utf-8');
+      }
+      
+      const ogTags = `
+        <title>Shared Media | Figment</title>
+        <meta property="og:title" content="View on Figment" />
+        <meta property="og:description" content="View this media on Figment" />
+        <meta property="og:image" content="${imgUrl}" />
+      `;
+
+      const html = template.replace('</head>', `${ogTags}</head>`);
+      res.status(200).set({ 'Content-Type': 'text/html' }).end(html);
+
+    } catch (e) {
+      console.error('Error handling /m/ route:', e);
+      next();
+    }
+  });
+
   if (process.env.NODE_ENV !== 'production') {
     app.use(vite.middlewares);
   } else {

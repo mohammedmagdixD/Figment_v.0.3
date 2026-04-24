@@ -9,6 +9,8 @@ import { LogMediaModal } from '../components/LogMediaModal';
 import { ConfirmDeleteModal } from '../components/ConfirmDeleteModal';
 import { SearchBar } from '../components/SearchBar';
 import { MediaCard } from '../components/MediaCard';
+import { useAuth } from '../contexts/AuthContext';
+import { handleAddToList } from '../utils/listManager';
 
 const MediaDetailsModal = lazy(() => import('../components/MediaDetailsModal').then(module => ({ default: module.MediaDetailsModal })));
 
@@ -56,6 +58,7 @@ const HistoryItem: React.FC<{
 }
 
 export const AddView = React.memo(function AddView({ onAddItem, initialType }: { onAddItem: (item: SearchResult, details: { rating: number, date: string, liked: boolean, rewatched: boolean }) => void, initialType?: MediaType }) {
+  const { user } = useAuth();
   const [isFocused, setIsFocused] = useState(false);
   const [query, setQuery] = useState('');
   const [activeType, setActiveType] = useState<MediaType>(initialType || 'movie');
@@ -208,6 +211,7 @@ export const AddView = React.memo(function AddView({ onAddItem, initialType }: {
                   sectionType={item.type}
                   onItemClick={setDetailItem}
                   onLogClick={setSelectedItem}
+                  onAddToListClick={() => handleAddToList(user?.id, item)}
                 />
               ))}
               
@@ -238,6 +242,7 @@ export const AddView = React.memo(function AddView({ onAddItem, initialType }: {
                 setSelectedItem(detailItem);
               }
             }}
+            onAddToListClick={() => handleAddToList(user?.id, detailItem)}
           />
         )}
       </Suspense>

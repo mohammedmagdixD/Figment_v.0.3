@@ -7,6 +7,7 @@ import { haptics } from '../utils/haptics';
 import { ConfirmDeleteModal } from '../components/ConfirmDeleteModal';
 import { SearchResult } from '../services/api';
 import { MediaCard } from '../components/MediaCard';
+import { handleAddToList } from '../utils/listManager';
 
 const MediaDetailsModal = lazy(() => import('../components/MediaDetailsModal').then(module => ({ default: module.MediaDetailsModal })));
 
@@ -88,6 +89,7 @@ export const RecommendationsView = React.memo(function RecommendationsView({ vie
               isOwnProfile={isOwnProfile}
               onDelete={setDeleteConfirmId}
               onItemClick={setSelectedMedia}
+              onAddToListClick={(rec.sender_id === user?.id || rec.sender?.id === user?.id) ? undefined : () => handleAddToList(user?.id, rec.media_items || rec)}
             />
           ))}
         </AnimatePresence>
@@ -99,6 +101,15 @@ export const RecommendationsView = React.memo(function RecommendationsView({ vie
             <MediaDetailsModal
               item={selectedMedia}
               onClose={() => setSelectedMedia(null)}
+              onAddToListClick={() => {
+                // Determine if the original recommendation was sent by current user
+                const rec = recommendations.find(r => r.media_item_id === selectedMedia.id || (r.media_items && r.media_items.external_id === selectedMedia.id));
+                if (rec && (rec.sender_id === user?.id || rec.sender?.id === user?.id)) {
+                  // Do nothing, it was sent by user
+                } else {
+                  handleAddToList(user?.id, selectedMedia);
+                }
+              }}
             />
           </Suspense>
         )}

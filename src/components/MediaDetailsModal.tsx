@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence, useAnimation, PanInfo, useDragControls } from 'motion/react';
-import { Loader2, ArrowLeft, Star } from 'lucide-react';
+import { Loader2, ArrowLeft, Star, Download } from 'lucide-react';
 import { SearchResult, getPodcastEpisodes, PodcastEpisode, getMovieDetails, getTvDetails, MovieDetails, getAnimeDetails, getMangaDetails, AnimeDetails, MangaDetails, getBookDetails, getAudioDetails } from '../services/api';
 import { LogMediaModal } from './LogMediaModal';
 import { haptics } from '../utils/haptics';
@@ -19,6 +19,8 @@ import {
 import { UniversalMediaData } from '../types/universal';
 import { useAuth } from '../contexts/AuthContext';
 import { getUserMediaInteraction } from '../services/supabaseData';
+import { showToast } from './Toast';
+import { toPng } from 'html-to-image';
 
 interface MediaDetailsModalProps {
   item: SearchResult & { rating?: number; dateAdded?: string; type?: string } | null;
@@ -27,9 +29,10 @@ interface MediaDetailsModalProps {
   fullScreen?: boolean;
   onRateClick?: () => void;
   viewingUserId?: string;
+  onAddToListClick?: () => void;
 }
 
-export const MediaDetailsModal = React.memo(function MediaDetailsModal({ item, onClose, onLogEpisode, fullScreen, onRateClick, viewingUserId }: MediaDetailsModalProps) {
+export const MediaDetailsModal = React.memo(function MediaDetailsModal({ item, onClose, onLogEpisode, fullScreen, onRateClick, viewingUserId, onAddToListClick }: MediaDetailsModalProps) {
   useScrollLock(!!item);
 
   const [mediaDetails, setMediaDetails] = useState<any | null>(null);
@@ -230,27 +233,112 @@ export const MediaDetailsModal = React.memo(function MediaDetailsModal({ item, o
       };
     }
 
+    const handleDownload = async () => {
+      const cardContainer = document.getElementById(`universal-detail-export-container-${item?.id}`);
+      if (!cardContainer) return;
+
+      try {
+        haptics.light();
+        showToast('Generating image...', false);
+
+        const dataUrl = await toPng(cardContainer, {
+          cacheBust: false,
+          quality: 0.95,
+          pixelRatio: window.devicePixelRatio || 2,
+          filter: (node: HTMLElement | Node) => {
+            if ('classList' in node && typeof (node as HTMLElement).classList.contains === 'function') {
+              return !(node as HTMLElement).classList.contains('hide-on-export');
+            }
+            return true;
+          },
+          style: {
+            transform: 'none',
+            margin: '0',
+          }
+        });
+
+        const arr = dataUrl.split(',');
+        const mimeMatch = arr[0].match(/:(.*?);/);
+        const mime = mimeMatch ? mimeMatch[1] : 'image/png';
+        const bstr = atob(arr[1]);
+        let n = bstr.length;
+        const u8arr = new Uint8Array(n);
+        while(n--){
+            u8arr[n] = bstr.charCodeAt(n);
+        }
+        const blob = new Blob([u8arr], {type:mime});
+        const blobUrl = URL.createObjectURL(blob);
+
+        const link = document.createElement('a');
+        link.download = `${(normalizedData?.header.title || 'media').replace(/\s+/g, '_').toLowerCase()}_image.png`;
+        link.href = blobUrl;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
+        
+        haptics.success();
+      } catch (err) {
+        console.error('Failed to download image:', err);
+        haptics.error();
+        showToast('Failed to download image', true);
+      }
+    };
+
     return (
       <div className="relative h-full">
         {fullScreen && (
           <div className="absolute top-4 left-4 right-4 flex justify-between z-50 pt-safe-top">
             <button 
               onClick={handleClose}
-              className="p-2.5 bg-system-background/70 backdrop-blur-md rounded-full text-label hover:bg-secondary-system-background/80 transition-colors"
+              className="p-2.5 bg-system-background/70 backdrop-blur-md rounded-full text-label hover:bg-secondary-system-background/80 transition-colors hide-on-export"
             >
               <ArrowLeft className="w-4 h-4" />
             </button>
-            {onRateClick && (
+            <div className="flex gap-2">
               <button 
-                onClick={onRateClick}
-                className="p-2.5 bg-system-background/70 backdrop-blur-md rounded-full text-label hover:bg-secondary-system-background/80 transition-colors"
+                onClick={async () => {
+                  try {
+                    haptics.light();
+                    const shareUrl = `${window.location.origin}/m/${item.type || 'generic'}/${item.id}`;
+                    if (navigator.share) {
+                      await navigator.share({
+                        title: normalizedData?.header.title || 'Check this out',
+                        url: shareUrl
+                      });
+                    } else {
+                      await navigator.clipboard.writeText(shareUrl);
+                      showToast('Link copied to clipboard!');
+                    }
+                  } catch (e) {
+                    console.error('Failed to share', e);
+                  }
+                }}
+                className="p-2.5 bg-system-background/70 backdrop-blur-md rounded-full text-label hover:bg-secondary-system-background/80 transition-colors hide-on-export"
               >
-                <Star className="w-4 h-4" />
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" x2="12" y1="2" y2="15"/></svg>
               </button>
-            )}
+              <button 
+                onClick={handleDownload}
+                className="p-2.5 bg-system-background/70 backdrop-blur-md rounded-full text-label hover:bg-secondary-system-background/80 transition-colors hide-on-export"
+              >
+                <Download className="w-4 h-4" />
+              </button>
+              {onRateClick && (
+                <button 
+                  onClick={onRateClick}
+                  className="p-2.5 bg-system-background/70 backdrop-blur-md rounded-full text-label hover:bg-secondary-system-background/80 transition-colors hide-on-export"
+                >
+                  <Star className="w-4 h-4" />
+                </button>
+              )}
+            </div>
           </div>
         )}
-        <UniversalDetailCard data={normalizedData} viewingUserId={viewingUserId} />
+        <div id={`universal-detail-export-container-${item?.id}`} className="h-full bg-system-background">
+          <UniversalDetailCard data={normalizedData} viewingUserId={viewingUserId} onAddToListClick={onAddToListClick} />
+        </div>
       </div>
     );
   };

@@ -5,6 +5,8 @@ import { MediaCard } from './MediaCard';
 import { SearchBar } from './SearchBar';
 import { Album } from '../services/api';
 import { haptics } from '../utils/haptics';
+import { useAuth } from '../contexts/AuthContext';
+import { handleAddToList } from '../utils/listManager';
 
 const MediaDetailsModal = lazy(() => import('./MediaDetailsModal').then(module => ({ default: module.MediaDetailsModal })));
 const AddToAlbumModal = lazy(() => import('./AddToAlbumModal').then(module => ({ default: module.AddToAlbumModal })));
@@ -23,6 +25,7 @@ type SortOrder = 'default' | 'alphaAsc' | 'alphaDesc' | 'newest' | 'oldest';
 type ViewMode = 'grid' | 'list' | 'carousel' | 'diary';
 
 export const SectionSeeAllModal = React.memo(function SectionSeeAllModal({ section, onClose, onLogEpisode, albums = [], onAddToAlbum, onCreateAlbum, viewingUserId }: SectionSeeAllModalProps) {
+  const { user } = useAuth();
   const [playingId, setPlayingId] = useState<string | null>(null);
   const [selectedItem, setSelectedItem] = useState<any | null>(null);
   const [addingToAlbumItem, setAddingToAlbumItem] = useState<any | null>(null);
@@ -285,6 +288,7 @@ export const SectionSeeAllModal = React.memo(function SectionSeeAllModal({ secti
                       onItemClick={setSelectedItem}
                       onPlayToggle={togglePlay}
                       onAddToAlbum={(section.type === 'music' && onAddToAlbum) ? setAddingToAlbumItem : undefined}
+                      onAddToListClick={viewingUserId && viewingUserId !== user?.id ? () => handleAddToList(user?.id, item) : undefined}
                     />
                   </div>
                 ))}
@@ -300,6 +304,7 @@ export const SectionSeeAllModal = React.memo(function SectionSeeAllModal({ secti
                     index={i} 
                     onItemClick={setSelectedItem}
                     viewMode="list"
+                    onAddToListClick={viewingUserId && viewingUserId !== user?.id ? () => handleAddToList(user?.id, item) : undefined}
                   />
                 ))}
               </div>
@@ -314,6 +319,7 @@ export const SectionSeeAllModal = React.memo(function SectionSeeAllModal({ secti
                     index={i} 
                     onItemClick={setSelectedItem}
                     viewMode="carousel"
+                    onAddToListClick={viewingUserId && viewingUserId !== user?.id ? () => handleAddToList(user?.id, item) : undefined}
                   />
                 ))}
               </div>
@@ -328,6 +334,7 @@ export const SectionSeeAllModal = React.memo(function SectionSeeAllModal({ secti
                     index={i} 
                     onItemClick={setSelectedItem}
                     viewMode="diary"
+                    onAddToListClick={viewingUserId && viewingUserId !== user?.id ? () => handleAddToList(user?.id, item) : undefined}
                   />
                 ))}
               </div>
@@ -344,6 +351,7 @@ export const SectionSeeAllModal = React.memo(function SectionSeeAllModal({ secti
               onClose={() => setSelectedItem(null)} 
               onLogEpisode={onLogEpisode ? ((episode, rating, date, liked, rewatched) => onLogEpisode(episode, rating, date, liked, rewatched, selectedItem)) : undefined}
               viewingUserId={viewingUserId}
+              onAddToListClick={viewingUserId && viewingUserId !== user?.id ? () => handleAddToList(user?.id, selectedItem) : undefined}
             />
           </Suspense>
         )}

@@ -3,6 +3,8 @@ import { motion, AnimatePresence } from 'motion/react';
 import { ChevronRight, GripHorizontal, Plus, Play, Pause, ListPlus } from 'lucide-react';
 import { MediaCard } from './MediaCard';
 import { Album } from '../services/api';
+import { useAuth } from '../contexts/AuthContext';
+import { handleAddToList } from '../utils/listManager';
 
 const MediaDetailsModal = lazy(() => import('./MediaDetailsModal').then(module => ({ default: module.MediaDetailsModal })));
 const AddToAlbumModal = lazy(() => import('./AddToAlbumModal').then(module => ({ default: module.AddToAlbumModal })));
@@ -21,6 +23,7 @@ interface MediaScrollerProps {
 }
 
 export const MediaScroller = React.memo(function MediaScroller({ section, dragControls, isFirstSection = false, onAddClick, onSeeAllClick, onLogEpisode, albums = [], onAddToAlbum, onCreateAlbum, viewingUserId }: MediaScrollerProps) {
+  const { user } = useAuth();
   const [playingId, setPlayingId] = useState<string | null>(null);
   const [selectedItem, setSelectedItem] = useState<any | null>(null);
   const [addingToAlbumItem, setAddingToAlbumItem] = useState<any | null>(null);
@@ -129,6 +132,7 @@ export const MediaScroller = React.memo(function MediaScroller({ section, dragCo
             onItemClick={setSelectedItem}
             onPlayToggle={togglePlay}
             onAddToAlbum={(section.type === 'music' && onAddToAlbum) ? setAddingToAlbumItem : undefined}
+            onAddToListClick={viewingUserId && viewingUserId !== user?.id ? () => handleAddToList(user?.id, item) : undefined}
           />
         ))}
       </div>
@@ -141,6 +145,7 @@ export const MediaScroller = React.memo(function MediaScroller({ section, dragCo
               onClose={() => setSelectedItem(null)} 
               onLogEpisode={onLogEpisode ? ((episode, rating, date, liked, rewatched) => onLogEpisode(episode, rating, date, liked, rewatched, selectedItem)) : undefined}
               viewingUserId={viewingUserId}
+              onAddToListClick={viewingUserId && viewingUserId !== user?.id ? () => handleAddToList(user?.id, selectedItem) : undefined}
             />
           </Suspense>
         )}

@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'motion/react';
-import { Play, Star, ExternalLink, Headphones, BookOpen, Calendar, ChevronDown, ChevronUp, Loader2 } from 'lucide-react';
+import { Play, Star, ExternalLink, Headphones, BookOpen, Calendar, ChevronDown, ChevronUp, Loader2, ListPlus } from 'lucide-react';
 import { UniversalMediaData } from '../types/universal';
 import React, { useState, useRef, useEffect } from 'react';
 import { MediaCard } from './MediaCard';
@@ -14,9 +14,10 @@ import { useScrollLock } from '../hooks/useScrollLock';
 interface UniversalDetailCardProps {
   data: UniversalMediaData;
   viewingUserId?: string;
+  onAddToListClick?: () => void;
 }
 
-export const UniversalDetailCard = React.memo(function UniversalDetailCard({ data, viewingUserId }: UniversalDetailCardProps) {
+export const UniversalDetailCard = React.memo(function UniversalDetailCard({ data, viewingUserId, onAddToListClick }: UniversalDetailCardProps) {
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
   const [playingId, setPlayingId] = useState<string | null>(null);
   const [selectedItem, setSelectedItem] = useState<any | null>(null);
@@ -151,13 +152,22 @@ export const UniversalDetailCard = React.memo(function UniversalDetailCard({ dat
     return () => window.removeEventListener('pause-all-audio', handlePauseAll);
   }, [playingId]);
 
+  // Ensure images are always loaded via proxy to bypass Canvas tainting and HTML-to-Image CORS limitations
+  const getProxiedImage = (url: string | null | undefined) => {
+    if (!url) return undefined;
+    if (url.startsWith('http') && !url.includes(window.location.host)) {
+      return `/api/image-proxy?url=${encodeURIComponent(url)}`;
+    }
+    return url;
+  };
+
   return (
     <div className="flex flex-col pb-8">
       {/* 1. Hero Section */}
       <div className="relative w-full aspect-[16/9] bg-black shrink-0">
         <div className="absolute inset-0 overflow-hidden">
           <img 
-            src={(data.images.backdropUrl || data.images.posterUrl) || undefined} 
+            src={getProxiedImage(data.images.backdropUrl || data.images.posterUrl)} 
             alt={data.header.title} 
             decoding="async"
             className={`w-full h-full object-cover ${data.images.backdropFallback ? 'opacity-80 blur-[40px] scale-125' : 'opacity-90'}`}
@@ -165,7 +175,8 @@ export const UniversalDetailCard = React.memo(function UniversalDetailCard({ dat
             onError={(e) => {
               const target = e.target as HTMLImageElement;
               if (target.src.includes('maxresdefault.jpg')) {
-                target.src = target.src.replace('maxresdefault.jpg', 'hqdefault.jpg');
+                // If the proxy fails, we can fallback
+                target.src = getProxiedImage(target.src.replace('maxresdefault.jpg', 'hqdefault.jpg')) || target.src;
               }
             }}
           />
@@ -177,7 +188,7 @@ export const UniversalDetailCard = React.memo(function UniversalDetailCard({ dat
             href={data.actionButton.payload}
             target="_blank"
             rel="noopener noreferrer"
-            className="absolute inset-0 flex flex-col items-center justify-center group"
+            className="absolute inset-0 flex flex-col items-center justify-center group hide-on-export"
           >
             <div className="w-16 h-16 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center border border-white/20 group-hover:bg-black/60 transition-colors">
               {data.actionButton.type === 'trailer' && <Play className="w-8 h-8 text-white fill-white ml-1" />}
@@ -198,7 +209,7 @@ export const UniversalDetailCard = React.memo(function UniversalDetailCard({ dat
             <motion.img 
               layoutId={`poster-${data.id}`}
               onClick={() => setIsPosterExpanded(true)}
-              src={data.images.posterUrl || undefined} 
+              src={getProxiedImage(data.images.posterUrl)} 
               alt={data.header.title} 
               decoding="async"
               className="w-full h-full object-cover cursor-pointer rounded-xl"
@@ -243,18 +254,31 @@ export const UniversalDetailCard = React.memo(function UniversalDetailCard({ dat
         )}
 
         <div className="mb-4">
-          <h2 
-            className="font-sans text-2xl font-bold leading-tight text-label mb-1 select-none"
-            style={{ WebkitTouchCallout: 'none' }}
-            {...longPressProps}
-          >
-            {data.header.title}
-          </h2>
-          {data.header.subtitle && (
-            <p className="font-sans text-base text-secondary-label">
-              {data.header.subtitle}
-            </p>
-          )}
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <h2 
+                className="font-sans text-2xl font-bold leading-tight text-label mb-1 select-none"
+                style={{ WebkitTouchCallout: 'none' }}
+                {...longPressProps}
+              >
+                {data.header.title}
+              </h2>
+              {data.header.subtitle && (
+                <p className="font-sans text-base text-secondary-label">
+                  {data.header.subtitle}
+                </p>
+              )}
+            </div>
+            {onAddToListClick && (
+              <button
+                onClick={(e) => { e.stopPropagation(); onAddToListClick(); haptics.light(); }}
+                className="p-2.5 bg-secondary-system-background rounded-full text-label hover:bg-tertiary-system-background transition-colors shrink-0 border border-separator/50 shadow-sm hide-on-export"
+                aria-label="Add to List"
+              >
+                <ListPlus className="w-5 h-5" />
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Stats & Metadata in a single line */}
@@ -325,8 +349,8 @@ export const UniversalDetailCard = React.memo(function UniversalDetailCard({ dat
           <div className="mb-6">
             <div className="flex flex-wrap gap-3">
               {data.scrollableSections.watchProviders.map((provider: any, i: number) => (
-                <div key={i} className="w-[52px] h-[52px] rounded-[12px] overflow-hidden bg-secondary-system-background border border-separator flex items-center justify-center">
-                  <img src={provider.logo_path ? `https://image.tmdb.org/t/p/original${provider.logo_path}` : undefined} alt={provider.provider_name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                <div key={i} className="w-[52px] h-[52px] rounded-[12px] overflow-hidden bg-secondary-system-background border border-separator flex items-center justify-center shrink-0">
+                  <img src={getProxiedImage(provider.logo_path ? `https://image.tmdb.org/t/p/original${provider.logo_path}` : undefined)} alt={provider.provider_name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                 </div>
               ))}
             </div>
@@ -352,7 +376,7 @@ export const UniversalDetailCard = React.memo(function UniversalDetailCard({ dat
                 </p>
                 <button 
                   onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
-                  className="text-base font-medium text-ios-blue mt-1 flex items-center gap-1"
+                  className="text-base font-medium text-ios-blue mt-1 flex items-center gap-1 hide-on-export"
                 >
                   {isDescriptionExpanded ? 'Less' : 'More'}
                   {isDescriptionExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
@@ -382,7 +406,7 @@ export const UniversalDetailCard = React.memo(function UniversalDetailCard({ dat
                 <div key={i} className="flex flex-col items-center w-[88px] shrink-0 gap-2">
                   <div className="w-[72px] h-[72px] rounded-full overflow-hidden bg-secondary-system-background border border-separator">
                     {member.imageUrl ? (
-                      <img src={member.imageUrl || undefined} alt={member.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                      <img src={getProxiedImage(member.imageUrl)} alt={member.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-2xl text-tertiary-label">
                         {member.name.charAt(0)}
@@ -405,11 +429,11 @@ export const UniversalDetailCard = React.memo(function UniversalDetailCard({ dat
 
         {/* 5. Related Lists */}
         {isLoadingRelated ? (
-          <div className="flex justify-center py-8">
+          <div className="flex justify-center py-8 hide-on-export">
             <Loader2 className="w-8 h-8 text-secondary-label animate-spin" />
           </div>
         ) : relatedLists && relatedLists.length > 0 && (
-          <div className="flex flex-col gap-8 mb-8">
+          <div className="flex flex-col gap-8 mb-8 hide-on-export">
             {relatedLists.map((list, i) => (
               <div key={i}>
                 <h3 className="font-sans text-xl font-bold text-label mb-4">{list.listTitle}</h3>
@@ -433,7 +457,7 @@ export const UniversalDetailCard = React.memo(function UniversalDetailCard({ dat
 
         {/* 6. Extras */}
         {data.scrollableSections.extras && data.scrollableSections.extras.length > 0 && (
-          <div className="flex flex-col gap-8 mb-8">
+          <div className="flex flex-col gap-8 mb-8 hide-on-export">
             {data.scrollableSections.extras.map((extra, i) => (
               <div key={i}>
                 {extra.title && <h3 className="font-sans text-xl font-bold text-label mb-4">{extra.title}</h3>}
