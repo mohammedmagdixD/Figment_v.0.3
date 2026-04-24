@@ -528,7 +528,7 @@ export const UniversalDetailCard = React.memo(function UniversalDetailCard({ dat
               {/* Base Layer (Low-Res) */}
               <motion.img
                 layoutId={`poster-${data.id}`}
-                src={getProxiedImage(data.images.posterUrl)}
+                src={data.images.posterUrl || undefined}
                 alt={data.header.title}
                 className={`absolute w-full h-full object-cover ${(data.mediaType === 'song' || data.mediaType === 'music') ? 'rounded-full' : 'rounded-xl'} shadow-2xl`}
                 referrerPolicy="no-referrer"
@@ -541,7 +541,7 @@ export const UniversalDetailCard = React.memo(function UniversalDetailCard({ dat
                   animate={{ opacity: isHighResLoaded ? 1 : 0 }}
                   exit={{ opacity: 0 }}
                   transition={{ duration: 0.3 }}
-                  src={getProxiedImage(data.images.posterUrl.replace('w500', 'original'))} // Assuming TMDB format, adjust if needed
+                  src={data.images.posterUrl.replace('w500', 'original')} // Assuming TMDB format, adjust if needed
                   alt={data.header.title}
                   onLoad={() => setIsHighResLoaded(true)}
                   className={`absolute w-full h-full object-cover ${(data.mediaType === 'song' || data.mediaType === 'music') ? 'rounded-full' : 'rounded-xl'}`}

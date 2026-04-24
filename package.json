@@ -5,8 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "tsx server.ts",
-    "prebuild": "tsx scripts/generate-icons.js",
-    "build": "npm run prebuild && vite build",
+    "build": "vite build",
     "preview": "vite preview",
     "clean": "rm -rf dist",
     "lint": "tsc --noEmit",
