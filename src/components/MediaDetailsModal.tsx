@@ -254,6 +254,7 @@ export const MediaDetailsModal = React.memo(function MediaDetailsModal({ item, o
           style: {
             transform: 'none',
             margin: '0',
+            fontFamily: '"Satoshi", sans-serif'
           }
         });
 
@@ -336,7 +337,7 @@ export const MediaDetailsModal = React.memo(function MediaDetailsModal({ item, o
             </div>
           </div>
         )}
-        <div id={`universal-detail-export-container-${item?.id}`} className="h-full bg-system-background">
+        <div id={`universal-detail-export-container-${item?.id}`} className="h-full bg-system-background font-sans">
           <UniversalDetailCard data={normalizedData} viewingUserId={viewingUserId} onAddToListClick={onAddToListClick} />
         </div>
       </div>
@@ -377,7 +378,7 @@ export const MediaDetailsModal = React.memo(function MediaDetailsModal({ item, o
             dragElastic={0.2}
             onDragEnd={fullScreen ? undefined : handleDragEnd}
             onClick={(e) => e.stopPropagation()}
-            className={`relative w-full bg-system-background shadow-2xl overflow-hidden flex flex-col ${
+            className={`relative w-full bg-system-background font-sans shadow-2xl overflow-hidden flex flex-col ${
               fullScreen 
                 ? 'h-full max-w-full rounded-none' 
                 : 'max-w-md rounded-t-[32px] sm:rounded-3xl h-[95vh] sm:h-[85vh] sm:max-h-[850px]'
