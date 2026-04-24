@@ -90,12 +90,12 @@ export default defineConfig(({mode}) => {
           start_url: '/',
           icons: [
             {
-              src: '/icon-192x192.png',
+              src: '/public/icon-512x512.png',
               sizes: '192x192',
               type: 'image/png'
             },
             {
-              src: '/icon-512x512.png',
+              src: '/public/icon-512x512.png',
               sizes: '512x512',
               type: 'image/png'
             }
