@@ -8,7 +8,6 @@
     <meta name="apple-mobile-web-app-title" content="Figment" />
     <meta name="theme-color" content="#000000" />
     <link rel="apple-touch-icon" href="/icon-192x192.png" />
-    <link rel="manifest" href="/manifest.json" />
     
     <!-- Explicit font links help html-to-image embed them perfectly compared to @import -->
     <link rel="preconnect" href="https://api.fontshare.com" crossorigin />
@@ -18,6 +17,14 @@
     <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,100..900;1,9..144,100..900&display=swap" rel="stylesheet" />
     
     <title>Figment</title>
+    <script>
+      window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        window.deferredPrompt = e;
+        // Dispatch a custom event so React can pick it up if it mounts later
+        window.dispatchEvent(new CustomEvent('pwa-prompt-ready', { detail: e }));
+      });
+    </script>
   </head>
   <body>
     <div id="root"></div>
