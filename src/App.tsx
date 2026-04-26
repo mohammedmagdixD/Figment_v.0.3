@@ -56,7 +56,7 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundarySta
     if (this.state.hasError) {
       return (
         <div className="min-h-[100dvh] bg-system-background sm:bg-secondary-system-background text-label font-sans sm:pb-12 selection:bg-ios-blue/30">
-          <div className="max-w-md w-full bg-system-background rounded-3xl p-8 shadow-sm text-center border border-separator/30">
+          <div className="max-w-[428px] mx-auto bg-system-background h-[100dvh] sm:h-[850px] sm:rounded-[40px] sm:my-8 sm:overflow-hidden sm:border-[8px] sm:border-secondary-system-background relative flex flex-col">
             <div className="w-16 h-16 bg-ios-red/10 text-ios-red rounded-full flex items-center justify-center mx-auto mb-6">
               <AlertTriangle className="w-8 h-8" />
             </div>
@@ -406,7 +406,7 @@ export default function App() {
                 onAuthClick={handleAuthClick} 
                 onSocialsChange={handleSocialsChange}
               />
-              <div className="w-full h-[0.5px] bg-separator my-4" />
+            <div className="w-full h-[0.5px] bg-separator my-4" />
               
               {activeSections.length > 0 ? (
                 isOwnProfile ? (
