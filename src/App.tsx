@@ -392,12 +392,12 @@ export default function App() {
 
   return (
     <ErrorBoundary>
-      <div className="min-h-[100dvh] bg-secondary-system-background text-label font-sans sm:pb-12 selection:bg-ios-blue/30">
+      <div className="min-h-[100dvh] bg-system-background sm:bg-secondary-system-background text-label font-sans sm:pb-12 selection:bg-ios-blue/30">
         <div className="max-w-[428px] mx-auto bg-system-background h-[100dvh] sm:h-[850px] shadow-sm sm:rounded-[40px] sm:my-8 sm:overflow-hidden sm:border-[8px] sm:border-secondary-system-background relative flex flex-col">
           {/* iOS Status Bar Spacer (simulated for desktop view) */}
           <div className="hidden sm:block h-6 w-full bg-system-background shrink-0" />
           
-          <div className="flex-1 flex flex-col pt-safe-top bg-system-background overflow-hidden">
+          <div className="flex-1 flex flex-col bg-system-background overflow-hidden">
             <div className="flex-1 relative w-full h-full">
               <main className={`absolute inset-0 overflow-y-auto hide-scrollbar scroll-container pb-28 space-y-2 transition-opacity duration-200 ${renderedTab === 'profile' ? 'opacity-100 z-10 pointer-events-auto' : 'opacity-0 z-0 pointer-events-none'}`}>
               <Header 

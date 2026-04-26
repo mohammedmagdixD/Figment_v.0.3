@@ -28,7 +28,7 @@ export const Header = React.memo(function Header({ profile, isOwnProfile = true,
 
   return (
     <>
-      <header className="px-4 pt-12 pb-6 relative">
+      <header className="px-4 pt-[calc(env(safe-area-inset-top)+3rem)] pb-6 relative">
         {/* Top Actions - Glassmorphic */}
         <div className="absolute top-4 right-4 flex gap-3 z-10">
           {!isOwnProfile ? (
