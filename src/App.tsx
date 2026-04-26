@@ -407,7 +407,6 @@ export default function App() {
                 onAuthClick={handleAuthClick} 
                 onSocialsChange={handleSocialsChange}
               />
-            <div className="w-full h-[0.5px] bg-separator my-4" />
               
               {activeSections.length > 0 ? (
                 isOwnProfile ? (
