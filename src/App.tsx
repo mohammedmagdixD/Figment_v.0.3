@@ -397,8 +397,9 @@ export default function App() {
           {/* iOS Status Bar Spacer (simulated for desktop view) */}
           <div className="hidden sm:block h-6 w-full bg-system-background shrink-0" />
           
-          <div className="flex-1 overflow-hidden relative pt-safe-top bg-system-background">
-            <main className={`absolute inset-0 overflow-y-auto hide-scrollbar scroll-container pb-28 space-y-2 transition-opacity duration-200 ${renderedTab === 'profile' ? 'opacity-100 z-10 pointer-events-auto' : 'opacity-0 z-0 pointer-events-none'}`}>
+          <div className="flex-1 flex flex-col pt-safe-top bg-system-background overflow-hidden">
+            <div className="flex-1 relative w-full h-full">
+              <main className={`absolute inset-0 overflow-y-auto hide-scrollbar scroll-container pb-28 space-y-2 transition-opacity duration-200 ${renderedTab === 'profile' ? 'opacity-100 z-10 pointer-events-auto' : 'opacity-0 z-0 pointer-events-none'}`}>
               <Header 
                 profile={profile} 
                 isOwnProfile={isOwnProfile} 
@@ -532,6 +533,7 @@ export default function App() {
                 <AddView onAddItem={handleAddItem} initialType={activeSection?.type} />
               </Suspense>
             </main>
+            </div>
           </div>
           
           <BottomTabBar 
