@@ -393,7 +393,7 @@ export default function App() {
   return (
     <ErrorBoundary>
       <div className="min-h-[100dvh] bg-system-background sm:bg-secondary-system-background text-label font-sans sm:pb-12 selection:bg-ios-blue/30">
-        <div className="max-w-[428px] mx-auto bg-system-background h-[100dvh] sm:h-[850px] shadow-sm sm:rounded-[40px] sm:my-8 sm:overflow-hidden sm:border-[8px] sm:border-secondary-system-background relative flex flex-col">
+        <div className="max-w-[428px] mx-auto bg-system-background h-[100dvh] sm:h-[850px] sm:rounded-[40px] sm:my-8 sm:overflow-hidden sm:border-[8px] sm:border-secondary-system-background relative flex flex-col">
           {/* iOS Status Bar Spacer (simulated for desktop view) */}
           <div className="hidden sm:block h-6 w-full bg-system-background shrink-0" />
           
@@ -477,7 +477,7 @@ export default function App() {
                   <div className="horizontal-scroll-container hide-scrollbar snap-x snap-mandatory">
                     {albums.map((album) => (
                       <div key={album.id} className="snap-start card-container flex flex-col gap-2 cursor-pointer card-square">
-                        <div className="relative overflow-hidden rounded-xl bg-secondary-system-background shadow-sm border border-separator card-image">
+                        <div className="relative overflow-hidden rounded-xl bg-secondary-system-background border border-separator card-image">
                           {album.coverImage ? (
                             <img src={album.coverImage || undefined} alt={album.title} className="w-full h-full object-cover" />
                           ) : (

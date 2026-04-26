@@ -4,12 +4,12 @@
   "start_url": "/",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#FFFFF7",
-  "theme_color": "#FFFFF7",
+  "background_color": "#0D0D0D",
+  "theme_color": "#0D0D0D",
   "user_preferences": {
     "color_scheme_dark": {
-      "theme_color": "#0D0D0D",
-      "background_color": "#0D0D0D"
+      "theme_color": "#FFFFF7",
+      "background_color": "#FFFFF7"
     }
   },
   "icons": [
