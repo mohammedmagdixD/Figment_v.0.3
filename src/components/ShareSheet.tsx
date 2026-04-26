@@ -58,31 +58,26 @@ export function ShareSheet({ isOpen, onClose, profile }: ShareSheetProps) {
     { 
       name: 'WhatsApp', 
       icon: <MessageCircle className="w-5 h-5" />, 
-      hoverClass: 'hover:bg-whispering-leaf hover:border-whispering-leaf hover:shadow-[0_0_15px_rgba(209,234,205,0.5)]', 
       url: `https://wa.me/?text=${encodeURIComponent(`Check out ${profile.name}'s profile on Figment: ${shareUrl}`)}` 
     },
     { 
       name: 'Twitter', 
       icon: <Twitter className="w-5 h-5" />, 
-      hoverClass: 'hover:bg-quiet-sky hover:border-quiet-sky hover:shadow-[0_0_15px_rgba(196,227,243,0.5)]', 
       url: `https://twitter.com/intent/tweet?text=${encodeURIComponent(`Check out ${profile.name}'s profile on Figment!`)}&url=${encodeURIComponent(shareUrl)}` 
     },
     { 
       name: 'Telegram', 
       icon: <Send className="w-5 h-5" />, 
-      hoverClass: 'hover:bg-quiet-sky hover:border-quiet-sky hover:shadow-[0_0_15px_rgba(196,227,243,0.5)]', 
       url: `https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(`Check out ${profile.name}'s profile on Figment!`)}` 
     },
     { 
       name: 'Instagram', 
       icon: <Instagram className="w-5 h-5" />, 
-      hoverClass: 'hover:bg-cherry-blossom hover:border-cherry-blossom hover:shadow-[0_0_15px_rgba(244,200,221,0.5)]', 
       url: `https://www.instagram.com/` 
     },
     { 
       name: 'Messages', 
       icon: <MessageCircle className="w-5 h-5" />, 
-      hoverClass: 'hover:bg-whispering-leaf hover:border-whispering-leaf hover:shadow-[0_0_15px_rgba(209,234,205,0.5)]', 
       url: `sms:?&body=${encodeURIComponent(`Check out ${profile.name}'s profile on Figment: ${shareUrl}`)}` 
     },
   ];
@@ -187,7 +182,7 @@ export function ShareSheet({ isOpen, onClose, profile }: ShareSheetProps) {
                             whileTap={{ scale: 0.95 }}
                             transition={{ type: "spring", stiffness: 600, damping: 35 }}
                             onClick={() => haptics.light()}
-                            className={`w-[60px] h-[60px] flex items-center justify-center rounded-full bg-secondary-system-background border border-separator shadow-sm transition-colors duration-300 text-label ${option.hoverClass}`}
+                            className="w-[60px] h-[60px] flex items-center justify-center rounded-full bg-secondary-system-background border border-separator shadow-sm transition-colors duration-300 text-label"
                             aria-label={option.name}
                           >
                             {option.icon}
