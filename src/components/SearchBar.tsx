@@ -74,7 +74,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
             onClick={handleBack}
             className="flex-shrink-0 overflow-hidden flex items-center"
           >
-            <div className="w-9 h-9 flex items-center justify-center rounded-full bg-tertiary-system-background text-label shrink-0 hover:bg-secondary-system-background transition-colors active:scale-95">
+            <div className="w-9 h-9 flex items-center justify-center rounded-full bg-secondary-system-background text-label shrink-0 hover:bg-tertiary-system-background transition-colors active:scale-95">
               <ArrowLeft className="w-4 h-4 shrink-0" />
             </div>
           </motion.button>
@@ -98,7 +98,7 @@ export const SearchBar: React.FC<SearchBarProps> = ({
           onFocus={handleFocus}
           onBlur={handleBlur}
           onKeyDown={handleKeyDown}
-          className="w-full bg-tertiary-system-background border border-separator rounded-full py-2.5 pl-10 pr-4 text-sm font-sans text-label placeholder:text-secondary-label focus:outline-none focus:ring-2 focus:ring-label/10 transition-all shadow-sm"
+          className="w-full bg-secondary-system-background border border-separator rounded-full py-2.5 pl-10 pr-4 text-sm font-sans text-label placeholder:text-secondary-label focus:outline-none focus:ring-2 focus:ring-label/10 transition-all shadow-sm"
         />
       </motion.div>
     </div>

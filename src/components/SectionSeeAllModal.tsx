@@ -233,7 +233,7 @@ export const SectionSeeAllModal = React.memo(function SectionSeeAllModal({ secti
               className={`shrink-0 flex items-center justify-center px-4 py-1.5 rounded-full whitespace-nowrap transition-all duration-300 ${
                 activeMediaFilter === null
                   ? 'bg-label text-system-background shadow-sm scale-105 ring-1 ring-label ring-offset-1 ring-offset-system-background'
-                  : 'bg-tertiary-system-background text-secondary-label hover:bg-secondary-system-background hover:scale-105'
+                  : 'bg-secondary-system-background text-secondary-label hover:bg-tertiary-system-background hover:scale-105'
               }`}
             >
               <span className="text-xs font-semibold">All</span>
@@ -256,7 +256,7 @@ export const SectionSeeAllModal = React.memo(function SectionSeeAllModal({ secti
                 className={`shrink-0 flex items-center gap-1.5 px-4 py-1.5 rounded-full whitespace-nowrap transition-all duration-300 ${
                   isActive 
                   ? 'bg-label text-system-background shadow-sm scale-105 ring-1 ring-label ring-offset-1 ring-offset-system-background' 
-                  : 'bg-tertiary-system-background text-secondary-label hover:bg-secondary-system-background hover:scale-105'
+                  : 'bg-secondary-system-background text-secondary-label hover:bg-tertiary-system-background hover:scale-105'
                 }`}
               >
                 <span className="text-xs font-semibold capitalize">{type}</span>

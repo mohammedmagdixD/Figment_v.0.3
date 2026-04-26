@@ -15,10 +15,11 @@ body {
   --safe-left: env(safe-area-inset-left);
   --safe-right: env(safe-area-inset-right);
 
-  --system-background:            #FFFFFF;
+  --system-background:            #FFFFF7;
   --secondary-system-background:  #F2F2F7;
-  --tertiary-system-background:   #FFFFFF;
-  --label:                        #000000;
+  --tertiary-system-background:   #FFFFF7;
+  --label:                        #0D0D0D;
+  --Accent:                       #191970;
   --secondary-label:              rgba(60, 60, 67, 0.60);
   --tertiary-label:               rgba(60, 60, 67, 0.30);
   --separator:                    rgba(60, 60, 67, 0.29);
@@ -30,10 +31,11 @@ body {
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --system-background:            #000000;
+    --system-background:            #0D0D0D;
     --secondary-system-background:  #1C1C1E;
     --tertiary-system-background:   #2C2C2E;
-    --label:                        #FFFFFF;
+    --label:                        #FFFFF7;
+    --Accent:                       #191970;
     --secondary-label:              rgba(235, 235, 245, 0.60);
     --tertiary-label:               rgba(235, 235, 245, 0.30);
     --separator:                    rgba(84, 84, 88, 0.65);
@@ -41,10 +43,11 @@ body {
 }
 
 .dark {
-  --system-background:            #000000;
+  --system-background:            #0D0D0D;
   --secondary-system-background:  #1C1C1E;
   --tertiary-system-background:   #2C2C2E;
-  --label:                        #FFFFFF;
+  --label:                        #FFFFF7;
+  --Accent:                       #191970;
   --secondary-label:              rgba(235, 235, 245, 0.60);
   --tertiary-label:               rgba(235, 235, 245, 0.30);
   --separator:                    rgba(84, 84, 88, 0.65);

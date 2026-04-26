@@ -36,7 +36,7 @@ export function ThemeProvider({
     const updateThemeColor = (isDark: boolean) => {
       let metaThemeColor = document.querySelector('meta[name="theme-color"]');
       if (metaThemeColor) {
-        metaThemeColor.setAttribute('content', isDark ? '#1C1C1E' : '#FFFFFF');
+        metaThemeColor.setAttribute('content', isDark ? '#0D0D0D' : '#FFFFF7');
       }
     };
 

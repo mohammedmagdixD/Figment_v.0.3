@@ -147,7 +147,7 @@ export const AddView = React.memo(function AddView({ onAddItem, initialType }: {
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full whitespace-nowrap transition-all duration-300 ${
                 activeType === type.id
                   ? 'bg-label text-system-background shadow-sm scale-105 ring-1 ring-label ring-offset-1 ring-offset-system-background'
-                  : 'bg-tertiary-system-background text-secondary-label hover:bg-secondary-system-background hover:scale-105'
+                  : 'bg-secondary-system-background text-secondary-label hover:bg-tertiary-system-background hover:scale-105'
               }`}
             >
               <div className="[&>svg]:w-3.5 [&>svg]:h-3.5 flex items-center justify-center">
