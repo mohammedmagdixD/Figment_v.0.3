@@ -377,7 +377,7 @@ export const SectionSeeAllModal = React.memo(function SectionSeeAllModal({ secti
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsAdvancedFilterOpen(false)}
-              className="absolute inset-0 z-[60] bg-black/40 backdrop-blur-sm"
+              className="absolute inset-0 z-[60] bg-overlay backdrop-blur-sm"
             />
             <motion.div
               initial={{ y: '100%' }}

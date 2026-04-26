@@ -99,7 +99,7 @@ html, body {
   overscroll-behavior-y: none; /* Stops iOS elastic bounce effect */
   -webkit-tap-highlight-color: transparent; /* Removes touch flash globally */
   touch-action: manipulate; /* Hardware-accelerated tap actions and scrolling */
-  background-color: var(--system-background, #F4F4F4); /* Default light theme background */
+  background-color: var(--system-background); /* Default light theme background */
 }
 
 /* Eradicate text-selection highlight when dragging or double tapping UI components */
