@@ -120,10 +120,9 @@ img {
 
 /* Dark mode body background */
 html.dark body {
-  background-color: #1C1C1E; /* iOS system grouped background */
-  color: #FFFFFF;
+  background-color: var(--system-background); 
+  color: var(--label); 
 }
-
 /* Individual scroll containers */
 .scroll-container {
   overflow-y: auto;
